@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Master Kids - 相容性修復版</title>
+    <title>English Master Kids - 手機完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -17,10 +17,8 @@
         @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-        
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
         .backdrop-blur-sm { backdrop-filter: blur(4px); }
     </style>
 </head>
@@ -28,13 +26,13 @@
 
     <div id="app" class="min-h-screen flex flex-col items-center max-w-md mx-auto bg-white shadow-2xl min-h-screen relative">
         <div class="flex items-center justify-center h-screen text-slate-400">
-            系統初始化中...
+            系統載入中...
         </div>
     </div>
 
     <script>
         // ==========================================
-        //  單字資料庫 (Data Center)
+        //  單字資料庫
         // ==========================================
         const WORD_DATA = {
             level1: [
@@ -114,7 +112,7 @@
         ];
 
         // ==========================================
-        //  應用程式邏輯 (App Logic)
+        //  應用程式邏輯
         // ==========================================
 
         let state = {
@@ -139,23 +137,20 @@
             if(debugEl) debugEl.textContent = msg;
         }
 
-        // --- 核心：語音功能檢測 ---
-        // 1. TTS 檢測與初始化
+        // --- TTS & STT 初始化 ---
         function initTTS() {
             if ('speechSynthesis' in window) {
                 state.ttsSupported = true;
-                // 強制觸發 getVoices，解決 Android/iOS 第一次空值問題
+                // 強制載入語音包
                 window.speechSynthesis.getVoices();
                 window.speechSynthesis.onvoiceschanged = () => {
-                    console.log("語音包已載入:", window.speechSynthesis.getVoices().length);
+                    console.log("語音包已載入");
                 };
             } else {
                 state.ttsSupported = false;
-                console.warn("此瀏覽器不支援 TTS");
             }
         }
 
-        // 2. STT 檢測
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         
@@ -181,9 +176,9 @@
                 
                 recognition.onerror = (e) => {
                     let msg = "辨識錯誤";
-                    if(e.error === 'not-allowed') msg = "❌ 權限被拒絕 (請檢查設定)";
-                    else if(e.error === 'no-speech') msg = "❌ 沒聽到聲音，請再試一次";
-                    else if(e.error === 'network') msg = "❌ 網路錯誤 (需連網)";
+                    if(e.error === 'not-allowed') msg = "❌ 權限被拒絕";
+                    else if(e.error === 'no-speech') msg = "❌ 沒聽到聲音";
+                    else if(e.error === 'network') msg = "❌ 網路問題";
                     state.status = 'idle';
                     logDebug(msg);
                     render();
@@ -195,68 +190,54 @@
                         render();
                     }
                 };
-            } else {
-                state.speechSupported = false;
             }
         }
 
-        // 語音合成 (TTS) 執行
         function speak(text) {
             if (!state.ttsSupported) {
-                logDebug("❌ 瀏覽器不支援發音功能");
+                logDebug("❌ 不支援發音");
                 return;
             }
-            try {
-                window.speechSynthesis.cancel(); // 先停止上一個
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'en-US';
-                u.rate = 0.8;
-                
-                // 嘗試選擇比較好的英文聲音
-                const voices = window.speechSynthesis.getVoices();
-                const enVoice = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.includes('en'));
-                if(enVoice) u.voice = enVoice;
+            // 強制停止之前的發音，避免 iOS 隊列卡住
+            window.speechSynthesis.cancel(); 
+            
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = 0.8;
+            
+            // 嘗試指定語音包
+            const voices = window.speechSynthesis.getVoices();
+            const enVoice = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.includes('en'));
+            if(enVoice) u.voice = enVoice;
 
-                window.speechSynthesis.speak(u);
-            } catch (err) {
-                logDebug("發音錯誤: " + err.message);
-            }
+            window.speechSynthesis.speak(u);
         }
 
-        // 啟動錄音 (含錯誤處理)
         function startRecording() {
-            // 情況 A: 瀏覽器根本不支援 API (例如 iOS Safari 一般模式)
             if (!state.speechSupported) {
-                alert("抱歉，您的瀏覽器不支援語音辨識。\n\n建議使用：\n1. Android Chrome\n2. 電腦版 Chrome/Edge\n(iOS 目前支援度較差)");
+                alert("瀏覽器不支援錄音，請使用 Android Chrome 或電腦 Chrome。");
                 return;
             }
-
-            // 情況 B: 支援 API 但沒有 HTTPS (常見原因)
             if (!state.isSecure) {
-                alert("⚠️ 麥克風安全警告\n\n您目前的網址不是 HTTPS 安全連線，瀏覽器可能會封鎖麥克風。\n\n請將檔案上傳至 GitHub Pages 或使用 localhost 測試。");
-                // 雖然警告，還是嘗試啟動看看，也許使用者有設定例外
+                alert("⚠️ 非 HTTPS 連線，麥克風可能會被封鎖。");
             }
-
             try {
                 recognition.start();
             } catch(e) {
                 console.error(e);
-                alert("無法啟動麥克風: " + e.message);
             }
         }
 
-        // 評估邏輯
         function evaluate(userSay) {
             state.status = 'evaluating';
             const currentQ = state.questions[state.currentIndex];
             const target = currentQ.en.toLowerCase();
             const input = userSay.toLowerCase();
-            
             const isCorrect = input.includes(target) || target.includes(input);
             
             if (isCorrect) state.score += 10;
             
-            speak(currentQ.en);
+            speak(currentQ.en); // 唸答案
             render();
 
             setTimeout(() => {
@@ -289,23 +270,24 @@
             state.view = 'game';
             state.showMicModal = true; 
             
-            // 初始化除錯訊息
-            if (!state.speechSupported) state.debugMsg = "⚠️ 瀏覽器無錄音功能";
-            else if (!state.isSecure) state.debugMsg = "⚠️ 非安全連線，麥克風可能失效";
+            // 初始化訊息
+            if (!state.speechSupported) state.debugMsg = "⚠️ 無錄音功能";
+            else if (!state.isSecure) state.debugMsg = "⚠️ 非安全連線";
             else state.debugMsg = "準備就緒";
             
             render();
         }
 
         function confirmMic(enable) {
+            // 重要：這一步必須由使用者點擊觸發，才能解鎖手機聲音
+            window.speechSynthesis.cancel(); // 先清空
+            speak(state.questions[0].en);    // 立即發音第一個字
+
             state.showMicModal = false;
             render();
             
-            // 點擊事件中直接觸發 speak，這是解鎖手機語音的關鍵
-            speak(state.questions[0].en);
-
+            // 如果要開麥克風，則嘗試啟動
             if (enable && state.speechSupported) {
-                // 嘗試預先啟動一次麥克風請求權限
                 startRecording();
             }
         }
@@ -319,36 +301,31 @@
             const app = document.getElementById('app');
             let html = '';
 
-            // --- HTTPS 警告條 ---
             let secureWarning = '';
             if (!state.isSecure && state.view === 'home') {
-                secureWarning = `
-                    <div class="bg-amber-100 text-amber-800 px-4 py-2 text-xs text-center border-b border-amber-200">
-                        ⚠️ 檢測到非安全連線 (HTTP/File)<br>麥克風功能可能會被瀏覽器封鎖
-                    </div>
-                `;
+                secureWarning = `<div class="bg-amber-100 text-amber-800 px-4 py-2 text-xs text-center border-b border-amber-200">⚠️ 檢測到非安全連線 (HTTP/File)<br>麥克風可能會失敗</div>`;
             }
 
-            // --- 麥克風權限詢問 Modal ---
+            // Modal
             let modalHtml = '';
             if (state.showMicModal) {
                 modalHtml = `
                     <div class="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-in">
                         <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
-                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg shadow-indigo-200">
-                                <i data-lucide="mic" class="w-8 h-8"></i>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">準備開始！</h3>
+                            <div class="text-sm text-left text-slate-600 bg-slate-50 p-3 rounded-lg mb-4 space-y-2">
+                                <p class="font-bold text-red-500">📱 iPhone 用戶注意：</p>
+                                <ul class="list-disc list-inside">
+                                    <li>請關閉左側「靜音開關」(不能是橘色)</li>
+                                    <li>請調大「媒體音量」</li>
+                                </ul>
                             </div>
-                            <h3 class="text-xl font-bold text-slate-800 mb-2">準備好了嗎？</h3>
-                            <p class="text-slate-500 mb-6 text-sm">
-                                點擊「開始」後，請允許麥克風權限。<br>
-                                (若手機沒聲音，請確認靜音鍵已關閉)
-                            </p>
                             <div class="flex flex-col gap-3">
                                 <button onclick="confirmMic(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md">
-                                    開始練習 (開啟聲音/麥克風)
+                                    開始練習 (點我發音)
                                 </button>
-                                <button onclick="confirmMic(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold py-3 rounded-xl transition-colors">
-                                    先不要
+                                <button onclick="speak('Test')" class="w-full bg-slate-100 text-slate-500 py-2 rounded-xl text-xs">
+                                    🔊 測試是否有聲音
                                 </button>
                             </div>
                         </div>
@@ -363,9 +340,8 @@
                         <header class="mb-8 text-center">
                             <h1 class="text-3xl font-black text-indigo-600 mb-1">English Master</h1>
                             <p class="text-sm text-slate-500">發音・聽力・單字特訓</p>
-                            ${!state.speechSupported ? '<div class="mt-2 bg-red-100 text-red-600 px-3 py-1 rounded text-xs inline-block">⚠️ 此瀏覽器不支援錄音 API</div>' : ''}
+                            ${!state.speechSupported ? '<div class="mt-2 bg-red-100 text-red-600 px-3 py-1 rounded text-xs inline-block">⚠️ 無法錄音 (建議用 Chrome)</div>' : ''}
                         </header>
-                        
                         <div class="grid gap-4">
                             ${LEVELS.map(lvl => `
                                 <button onclick="startGame('${lvl.id}')" class="relative overflow-hidden rounded-2xl shadow-md transition-transform active:scale-95 text-left">
@@ -400,7 +376,6 @@
                 html = `
                     <div class="w-full h-full flex flex-col p-6 fade-in relative">
                         ${modalHtml}
-                        
                         <div class="flex justify-between items-center mb-6">
                             <button onclick="goHome()" class="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
                                 <i data-lucide="arrow-left"></i>
@@ -433,39 +408,27 @@
                         </div>
 
                         <div class="flex items-center justify-center gap-6 mb-8">
-                            <!-- 發音按鈕：無論如何都顯示 -->
                             <button onclick="speak('${q.en}')" class="w-16 h-16 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center active:bg-slate-200 transition-colors shadow-sm">
                                 <i data-lucide="volume-2" class="w-8 h-8"></i>
                             </button>
 
-                            <!-- 麥克風按鈕：無論如何都顯示，點擊才檢查 -->
                             <button onclick="startRecording()" class="group relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${isListening ? 'scale-110' : 'hover:scale-105 active:scale-95'}">
-                                
                                 ${isListening ? `
                                     <div class="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20"></div>
                                     <div class="absolute -inset-3 bg-rose-500/20 rounded-full animate-pulse"></div>
                                 ` : `
                                     <div class="absolute inset-0 bg-indigo-600/20 rounded-full blur-xl group-hover:bg-indigo-600/30 transition-all"></div>
                                 `}
-                                
                                 <div class="relative w-full h-full rounded-full flex items-center justify-center shadow-2xl border-4 border-white transition-all duration-300
                                     ${isListening 
                                         ? 'bg-gradient-to-br from-rose-500 to-red-600 shadow-rose-500/50' 
                                         : 'bg-gradient-to-br from-indigo-500 to-blue-600 shadow-indigo-500/40'}">
-                                    
                                     <i data-lucide="mic" class="w-10 h-10 text-white transition-transform duration-300 ${isListening ? 'scale-110' : ''}"></i>
                                 </div>
-                                
-                                ${!isListening ? `
-                                    <div class="absolute -bottom-8 text-xs font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full shadow-sm border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                        按我錄音
-                                    </div>
-                                ` : ''}
+                                ${!isListening ? `<div class="absolute -bottom-8 text-xs font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full shadow-sm border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">按我錄音</div>` : ''}
                             </button>
                         </div>
-                        
-                        <!-- 底部輔助提示，如果不能錄音時顯示文字 -->
-                        ${!state.speechSupported ? '<div class="text-xs text-center text-slate-300">目前瀏覽器僅支援聽力練習</div>' : ''}
+                        ${!state.speechSupported ? '<div class="text-xs text-center text-slate-300">目前僅支援聽力練習</div>' : ''}
                     </div>
                 `;
             } else if (state.view === 'result') {
@@ -488,11 +451,9 @@
             lucide.createIcons();
         }
 
-        // 啟動檢測
         initTTS();
         initSTT();
         render();
-
     </script>
 </body>
 </html>
