@@ -3,38 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Master Kids - 發音特訓版</title>
+    <title>English Master Kids - UI優化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* APP 質感優化：禁止選取與彈性捲動 */
         body { 
             -webkit-touch-callout: none; 
             -webkit-user-select: none; 
             overscroll-behavior: none;
             font-family: 'system-ui', -apple-system, sans-serif;
         }
-        
-        /* 動畫效果庫 */
         .correct-anim { animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        
         .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-
-        .pulse-mic { animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-
+        
+        /* 移除舊的 pulse-mic，改用 Tailwind 原生動畫 */
+        
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .backdrop-blur-sm { backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
     <div id="app" class="min-h-screen flex flex-col items-center max-w-md mx-auto bg-white shadow-2xl min-h-screen relative">
-        <!-- 這裡會由 JavaScript 動態渲染內容 -->
         <div class="flex items-center justify-center h-screen text-slate-400">
-            載入單字庫中...
+            載入中...
         </div>
     </div>
 
@@ -42,191 +38,67 @@
         // ==========================================
         //  單字資料庫 (Data Center)
         // ==========================================
-        /* 說明：這裡存放所有關卡的單字。
-           格式：{ en: "英文", zh: "中文", hint: "諧音/注音" }
-           您可以依照此格式無限擴充。
-        */
-
         const WORD_DATA = {
-            // Level 1: 母音 (Vowels)
             level1: [
-                { en: "A", zh: "字母 A", hint: "ㄟ" },
-                { en: "E", zh: "字母 E", hint: "ㄧ" },
-                { en: "I", zh: "字母 I", hint: "愛" },
-                { en: "O", zh: "字母 O", hint: "歐" },
-                { en: "U", zh: "字母 U", hint: "優" },
-                { en: "Ant", zh: "螞蟻", hint: "安 ㄊ" },
-                { en: "Apple", zh: "蘋果", hint: "ㄟ ㄆㄛ" },
-                { en: "Egg", zh: "雞蛋", hint: "ㄟ ㄍ" },
-                { en: "Ink", zh: "墨水", hint: "硬 ㄎ" },
-                { en: "Orange", zh: "柳橙", hint: "歐 潤 橘" },
-                { en: "Umbrella", zh: "雨傘", hint: "安 不 瑞 拉" },
-                { en: "Ice", zh: "冰", hint: "愛 死" },
-                { en: "Ear", zh: "耳朵", hint: "伊 爾" },
-                { en: "Arm", zh: "手臂", hint: "阿 ㄇ" },
-                { en: "Old", zh: "老的", hint: "歐 ㄉ" }
+                { en: "A", zh: "字母 A", hint: "ㄟ" }, { en: "E", zh: "字母 E", hint: "ㄧ" },
+                { en: "I", zh: "字母 I", hint: "愛" }, { en: "O", zh: "字母 O", hint: "歐" },
+                { en: "U", zh: "字母 U", hint: "優" }, { en: "Apple", zh: "蘋果", hint: "ㄟ ㄆㄛ" },
+                { en: "Ant", zh: "螞蟻", hint: "安 ㄊ" }, { en: "Egg", zh: "雞蛋", hint: "ㄟ ㄍ" },
+                { en: "Ice", zh: "冰", hint: "愛 死" }, { en: "Old", zh: "老的", hint: "歐 ㄉ" }
             ],
-            // Level 2: 拼讀組合 (Phonics)
             level2: [
-                { en: "Cat", zh: "貓", hint: "ㄎㄟ ㄊ" },
-                { en: "Bat", zh: "蝙蝠", hint: "ㄅㄟ ㄊ" },
-                { en: "Hat", zh: "帽子", hint: "黑 ㄊ" },
-                { en: "Dad", zh: "爸爸", hint: "爹 ㄉ" },
-                { en: "Dog", zh: "狗", hint: "ㄉㄛ ㄍ" },
-                { en: "Log", zh: "圓木", hint: "拉 ㄍ" },
-                { en: "Pig", zh: "豬", hint: "ㄆㄧ ㄍ" },
-                { en: "Big", zh: "大的", hint: "必 ㄍ" },
-                { en: "Bus", zh: "公車", hint: "爸 死" },
-                { en: "Sun", zh: "太陽", hint: "桑" },
-                { en: "Hot", zh: "熱的", hint: "哈 ㄊ" },
-                { en: "Pot", zh: "鍋子", hint: "怕 ㄊ" },
-                { en: "Map", zh: "地圖", hint: "妹 ㄆ" },
-                { en: "Cap", zh: "鴨舌帽", hint: "ㄎㄟ ㄆ" },
-                { en: "Bed", zh: "床", hint: "貝 ㄉ" }
+                { en: "Cat", zh: "貓", hint: "ㄎㄟ ㄊ" }, { en: "Bat", zh: "蝙蝠", hint: "ㄅㄟ ㄊ" },
+                { en: "Hat", zh: "帽子", hint: "黑 ㄊ" }, { en: "Dad", zh: "爸爸", hint: "爹 ㄉ" },
+                { en: "Dog", zh: "狗", hint: "ㄉㄛ ㄍ" }, { en: "Map", zh: "地圖", hint: "妹 ㄆ" },
+                { en: "Bed", zh: "床", hint: "貝 ㄉ" }, { en: "Pig", zh: "豬", hint: "ㄆㄧ ㄍ" }
             ],
-            // Level 3: 國小單字 (Elementary)
             level3: [
-                { en: "Book", zh: "書", hint: "布 ㄎ" },
-                { en: "Pen", zh: "筆", hint: "噴" },
-                { en: "Desk", zh: "書桌", hint: "爹 死 ㄎ" },
-                { en: "School", zh: "學校", hint: "死 哭 喔" },
-                { en: "Teacher", zh: "老師", hint: "梯 區 兒" },
-                { en: "Student", zh: "學生", hint: "死 丟 等 ㄊ" },
-                { en: "Boy", zh: "男孩", hint: "波 ㄧ" },
-                { en: "Girl", zh: "女孩", hint: "葛 喔" },
-                { en: "Good", zh: "好的", hint: "古 ㄉ" },
-                { en: "Bad", zh: "壞的", hint: "貝 ㄉ" },
-                { en: "Happy", zh: "快樂", hint: "黑 皮" },
-                { en: "Sad", zh: "難過", hint: "塞 ㄉ" },
-                { en: "Red", zh: "紅色", hint: "瑞 ㄉ" },
-                { en: "Blue", zh: "藍色", hint: "布 魯" },
-                { en: "One", zh: "一", hint: "萬" }
+                { en: "Book", zh: "書", hint: "布 ㄎ" }, { en: "Pen", zh: "筆", hint: "噴" },
+                { en: "Desk", zh: "書桌", hint: "爹 死 ㄎ" }, { en: "School", zh: "學校", hint: "死 哭 喔" },
+                { en: "Boy", zh: "男孩", hint: "波 ㄧ" }, { en: "Girl", zh: "女孩", hint: "葛 喔" },
+                { en: "Happy", zh: "快樂", hint: "黑 皮" }, { en: "One", zh: "一", hint: "萬" }
             ],
-            // Level 4: 國中單字 (Junior High)
             level4: [
-                { en: "Family", zh: "家庭", hint: "肥 麼 離" },
-                { en: "Friend", zh: "朋友", hint: "夫 瑞 恩 ㄉ" },
-                { en: "Market", zh: "市場", hint: "罵 ㄎㄧ ㄊ" },
-                { en: "Dinner", zh: "晚餐", hint: "滴 呢" },
-                { en: "Subject", zh: "科目/主題", hint: "薩 ㄅ 傑 ㄎ ㄊ" },
-                { en: "History", zh: "歷史", hint: "黑 死 特 瑞" },
-                { en: "Music", zh: "音樂", hint: "謬 希 ㄎ" },
-                { en: "Sport", zh: "運動", hint: "死 波 ㄊ" },
-                { en: "Health", zh: "健康", hint: "黑 ㄛ 死" },
-                { en: "Doctor", zh: "醫生", hint: "打 ㄎ 特" },
-                { en: "Nurse", zh: "護士", hint: "訥 死" },
-                { en: "Police", zh: "警察", hint: "波 麗 死" },
-                { en: "Money", zh: "錢", hint: "媽 尼" },
-                { en: "Phone", zh: "電話", hint: "鳳" },
-                { en: "Watch", zh: "手錶/看", hint: "挖 去" }
+                { en: "Family", zh: "家庭", hint: "肥 麼 離" }, { en: "Friend", zh: "朋友", hint: "夫 瑞 恩 ㄉ" },
+                { en: "Market", zh: "市場", hint: "罵 ㄎㄧ ㄊ" }, { en: "Dinner", zh: "晚餐", hint: "滴 呢" },
+                { en: "Music", zh: "音樂", hint: "謬 希 ㄎ" }, { en: "Sport", zh: "運動", hint: "死 波 ㄊ" },
+                { en: "Money", zh: "錢", hint: "媽 尼" }, { en: "Phone", zh: "電話", hint: "鳳" }
             ],
-            // Level 5: 高一單字 (Senior High 1)
             level5: [
-                { en: "Ability", zh: "能力", hint: "阿 畢 樂 踢" },
-                { en: "Abroad", zh: "國外", hint: "阿 布 若 ㄉ" },
-                { en: "Accept", zh: "接受", hint: "噁 ㄙㄟ ㄆ ㄊ" },
-                { en: "Active", zh: "活躍的", hint: "ㄟ ㄎ 踢 夫" },
-                { en: "Adult", zh: "成人", hint: "噁 大 ㄛ ㄊ" },
-                { en: "Affect", zh: "影響", hint: "噁 菲 ㄎ ㄊ" },
-                { en: "Advice", zh: "建議", hint: "噁 ㄉ ㄈㄞˋ 死" },
-                { en: "Career", zh: "職涯", hint: "可 瑞 兒" },
-                { en: "Create", zh: "創造", hint: "可 瑞 ㄟ ㄊ" },
-                { en: "Damage", zh: "損害", hint: "爹 米 居" },
-                { en: "Debate", zh: "辯論", hint: "底 貝 ㄊ" },
-                { en: "Degree", zh: "學位/度數", hint: "底 桂" },
-                { en: "Detect", zh: "偵測", hint: "底 泰 ㄎ ㄊ" },
-                { en: "Device", zh: "裝置", hint: "底 ㄈㄞˋ 死" },
-                { en: "Effect", zh: "效果", hint: "以 菲 ㄎ ㄊ" }
+                { en: "Ability", zh: "能力", hint: "阿 畢 樂 踢" }, { en: "Accept", zh: "接受", hint: "噁 ㄙㄟ ㄆ ㄊ" },
+                { en: "Adult", zh: "成人", hint: "噁 大 ㄛ ㄊ" }, { en: "Advice", zh: "建議", hint: "噁 ㄉ ㄈㄞˋ 死" },
+                { en: "Create", zh: "創造", hint: "可 瑞 ㄟ ㄊ" }, { en: "Damage", zh: "損害", hint: "爹 米 居" },
+                { en: "Device", zh: "裝置", hint: "底 ㄈㄞˋ 死" }, { en: "Effect", zh: "效果", hint: "以 菲 ㄎ ㄊ" }
             ],
-            // Level 6: 高二單字 (Senior High 2)
             level6: [
-                { en: "Abandon", zh: "放棄", hint: "噁 班 頓" },
-                { en: "Absolute", zh: "絕對的", hint: "艾 ㄅ 搜 魯 ㄊ" },
-                { en: "Academic", zh: "學術的", hint: "艾 卡 爹 米 ㄎ" },
-                { en: "Access", zh: "存取/通道", hint: "艾 ㄎ ㄙㄟ 死" },
-                { en: "Achieve", zh: "達成", hint: "噁 區 夫" },
-                { en: "Benefit", zh: "利益", hint: "貝 呢 費 ㄊ" },
-                { en: "Capture", zh: "捕捉", hint: "凱 普 區 兒" },
-                { en: "Caution", zh: "小心", hint: "考 炫" },
-                { en: "Collapse", zh: "倒塌", hint: "可 賴 普 死" },
-                { en: "Combine", zh: "結合", hint: "康 拜 恩" },
-                { en: "Concept", zh: "概念", hint: "康 ㄙㄟ ㄆ ㄊ" },
-                { en: "Decade", zh: "十年", hint: "爹 ㄎㄟ ㄉ" },
-                { en: "Decline", zh: "衰退/拒絕", hint: "底 克 賴 恩" },
-                { en: "Dynamic", zh: "動態的", hint: "帶 奈 米 ㄎ" },
-                { en: "Economy", zh: "經濟", hint: "以 康 諾 米" }
+                { en: "Abandon", zh: "放棄", hint: "噁 班 頓" }, { en: "Absolute", zh: "絕對的", hint: "艾 ㄅ 搜 魯 ㄊ" },
+                { en: "Academic", zh: "學術的", hint: "艾 卡 爹 米 ㄎ" }, { en: "Access", zh: "存取/通道", hint: "艾 ㄎ ㄙㄟ 死" },
+                { en: "Achieve", zh: "達成", hint: "噁 區 夫" }, { en: "Benefit", zh: "利益", hint: "貝 呢 費 ㄊ" },
+                { en: "Capture", zh: "捕捉", hint: "凱 普 區 兒" }, { en: "Caution", zh: "小心", hint: "考 炫" }
             ],
-            // Level 7: 日常用語 (Daily Life)
             level7: [
-                { en: "Hello", zh: "你好", hint: "哈 囉" },
-                { en: "Goodbye", zh: "再見", hint: "古 掰" },
-                { en: "Please", zh: "請", hint: "普 麗 死" },
-                { en: "Thanks", zh: "謝謝", hint: "散 ㄎ 死" },
-                { en: "Sorry", zh: "對不起", hint: "縮 瑞" },
-                { en: "Help", zh: "幫忙", hint: "黑 ㄛ ㄆ" },
-                { en: "Water", zh: "水", hint: "瓦 特" },
-                { en: "Food", zh: "食物", hint: "夫 ㄉ" },
-                { en: "Toilet", zh: "廁所", hint: "偷 一 勒 ㄊ" },
-                { en: "Sleep", zh: "睡覺", hint: "死 麗 ㄆ" },
-                { en: "Wait", zh: "等一下", hint: "威 ㄊ" },
-                { en: "Excuse me", zh: "不好意思", hint: "以 ㄎ 死 Ｑ 死 密" },
-                { en: "How much", zh: "多少錢", hint: "豪 罵 取" },
-                { en: "Where", zh: "在哪裡", hint: "威 兒" },
-                { en: "When", zh: "何時", hint: "溫" }
+                { en: "Hello", zh: "你好", hint: "哈 囉" }, { en: "Goodbye", zh: "再見", hint: "古 掰" },
+                { en: "Please", zh: "請", hint: "普 麗 死" }, { en: "Thanks", zh: "謝謝", hint: "散 ㄎ 死" },
+                { en: "Help", zh: "幫忙", hint: "黑 ㄛ ㄆ" }, { en: "Water", zh: "水", hint: "瓦 特" },
+                { en: "Food", zh: "食物", hint: "夫 ㄉ" }, { en: "Sleep", zh: "睡覺", hint: "死 麗 ㄆ" }
             ],
-            // Level 8: 文法/動詞變化 (Grammar/Verbs)
             level8: [
-                { en: "Do", zh: "做 (原形)", hint: "度" },
-                { en: "Did", zh: "做 (過去式)", hint: "弟 ㄉ" },
-                { en: "Done", zh: "做 (完成式)", hint: "當" },
-                { en: "Go", zh: "去 (原形)", hint: "夠" },
-                { en: "Went", zh: "去 (過去式)", hint: "溫 ㄊ" },
-                { en: "Gone", zh: "去 (完成式)", hint: "剛" },
-                { en: "Eat", zh: "吃 (原形)", hint: "伊 ㄊ" },
-                { en: "Ate", zh: "吃 (過去式)", hint: "ㄟ ㄊ" },
-                { en: "Eaten", zh: "吃 (完成式)", hint: "伊 騰" },
-                { en: "See", zh: "看 (原形)", hint: "戲" },
-                { en: "Saw", zh: "看 (過去式)", hint: "索" },
-                { en: "Seen", zh: "看 (完成式)", hint: "信" },
-                { en: "Buy", zh: "買 (原形)", hint: "掰" },
-                { en: "Bought", zh: "買 (過去/完成)", hint: "報 ㄊ" },
-                { en: "Can", zh: "能夠 (助動詞)", hint: "看" }
+                { en: "Do", zh: "做 (原形)", hint: "度" }, { en: "Did", zh: "做 (過去式)", hint: "弟 ㄉ" },
+                { en: "Go", zh: "去 (原形)", hint: "夠" }, { en: "Went", zh: "去 (過去式)", hint: "溫 ㄊ" },
+                { en: "Eat", zh: "吃 (原形)", hint: "伊 ㄊ" }, { en: "Ate", zh: "吃 (過去式)", hint: "ㄟ ㄊ" },
+                { en: "See", zh: "看 (原形)", hint: "戲" }, { en: "Saw", zh: "看 (過去式)", hint: "索" }
             ],
-            // Level 9: 高三精進文法 (Senior High 3)
             level9: [
-                { en: "Hypothesis", zh: "假設", hint: "海 怕 ㄜ 喜 死" },
-                { en: "Metaphor", zh: "隱喻", hint: "妹 塔 佛" },
-                { en: "Sophisticated", zh: "精密的/老練的", hint: "蘇 菲 死 踢 k ㄊ" },
-                { en: "Vulnerable", zh: "易受傷的", hint: "佛 訥 惹 伯" },
-                { en: "Psychology", zh: "心理學", hint: "賽 卡 樂 居" },
-                { en: "Sustainable", zh: "永續的", hint: "薩 死 ㄊㄟ 訥 伯" },
-                { en: "Ambiguous", zh: "模稜兩可的", hint: "安 畢 桂 餓 死" },
-                { en: "Coincidence", zh: "巧合", hint: "口 印 西 等 死" },
-                { en: "Inevitable", zh: "不可避免的", hint: "因 內 佛 特 伯" },
-                { en: "Dilemma", zh: "進退兩難", hint: "底 累 罵" },
-                { en: "Simultaneous", zh: "同時的", hint: "賽 摩 ㄊㄟ 尼 餓 死" },
-                { en: "Spontaneous", zh: "自發的", hint: "死 棒 ㄊㄟ 尼 餓 死" },
-                { en: "Intervention", zh: "介入/干涉", hint: "因 特 芬 炫" },
-                { en: "Commodity", zh: "商品", hint: "可 罵 底 踢" },
-                { en: "Diversity", zh: "多樣性", hint: "帶 佛 色 踢" }
+                { en: "Hypothesis", zh: "假設", hint: "海 怕 ㄜ 喜 死" }, { en: "Metaphor", zh: "隱喻", hint: "妹 塔 佛" },
+                { en: "Psychology", zh: "心理學", hint: "賽 卡 樂 居" }, { en: "Sustainable", zh: "永續的", hint: "薩 死 ㄊㄟ 訥 伯" },
+                { en: "Ambiguous", zh: "模稜兩可的", hint: "安 畢 桂 餓 死" }, { en: "Dilemma", zh: "進退兩難", hint: "底 累 罵" },
+                { en: "Commodity", zh: "商品", hint: "可 罵 底 踢" }, { en: "Diversity", zh: "多樣性", hint: "帶 佛 色 踢" }
             ],
-            // Level 10: 學測/多益必學 (GSAT/TOEIC)
             level10: [
-                { en: "Comprehensive", zh: "綜合的/詳盡的", hint: "康 普 瑞 亨 西 夫" },
-                { en: "Distinguish", zh: "區別", hint: "滴 死 丁 貴 許" },
-                { en: "Characteristic", zh: "特徵", hint: "凱 瑞 特 瑞 死 踢 ㄎ" },
-                { en: "Prominent", zh: "顯著的", hint: "普 拉 米 嫩 ㄊ" },
-                { en: "Negotiate", zh: "談判", hint: "呢 購 喜 ㄟ ㄊ" },
-                { en: "Appreciate", zh: "感激/欣賞", hint: "噁 普 瑞 喜 ㄟ ㄊ" },
-                { en: "Consequently", zh: "結果/因此", hint: "康 色 昆 離" },
-                { en: "Nevertheless", zh: "儘管如此", hint: "內 佛 惹 勒 死" },
-                { en: "Potential", zh: "潛力", hint: "波 舔 秀" },
-                { en: "Exaggerate", zh: "誇張", hint: "一 葛 紮 惹 瑞 ㄊ" },
-                { en: "Acquire", zh: "獲得/習得", hint: "噁 塊 兒" },
-                { en: "Appropriate", zh: "適當的", hint: "噁 婆 普 瑞 ㄟ ㄊ" },
-                { en: "Efficient", zh: "有效率的", hint: "以 菲 炫 ㄊ" },
-                { en: "Representative", zh: "代表", hint: "瑞 普 瑞 仁 忑 替 夫" },
-                { en: "Component", zh: "成分/零件", hint: "康 剖 嫩 ㄊ" }
+                { en: "Comprehensive", zh: "綜合的/詳盡的", hint: "康 普 瑞 亨 西 夫" }, { en: "Distinguish", zh: "區別", hint: "滴 死 丁 貴 許" },
+                { en: "Negotiate", zh: "談判", hint: "呢 購 喜 ㄟ ㄊ" }, { en: "Appreciate", zh: "感激/欣賞", hint: "噁 普 瑞 喜 ㄟ ㄊ" },
+                { en: "Potential", zh: "潛力", hint: "波 舔 秀" }, { en: "Exaggerate", zh: "誇張", hint: "一 葛 紮 惹 瑞 ㄊ" },
+                { en: "Acquire", zh: "獲得/習得", hint: "噁 塊 兒" }, { en: "Efficient", zh: "有效率的", hint: "以 菲 炫 ㄊ" }
             ]
         };
 
@@ -248,27 +120,50 @@
         // ==========================================
 
         let state = {
-            view: 'home',      // home, game, result
+            view: 'home',
             currentLevelId: '',
-            questions: [],     // 本局題目
+            questions: [],
             currentIndex: 0,
             score: 0,
-            status: 'idle',    // idle, listening, evaluating
-            transcript: ''
+            status: 'idle',
+            transcript: '',
+            debugMsg: '',
+            showMicModal: false
         };
 
-        // 語音合成 (TTS)
-        function speak(text, rate = 0.8) {
-            window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(text);
-            u.lang = 'en-US';
-            u.rate = rate; // 速度稍慢適合學習
-            window.speechSynthesis.speak(u);
+        function logDebug(msg) {
+            console.log(msg);
+            state.debugMsg = msg;
+            const debugEl = document.getElementById('debug-area');
+            if(debugEl) debugEl.textContent = msg;
         }
 
-        // 語音辨識 (STT)
+        // 語音合成 (TTS)
+        function speak(text) {
+            try {
+                if (!window.speechSynthesis) {
+                    logDebug("❌ 瀏覽器不支援發音");
+                    return;
+                }
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-US';
+                u.rate = 0.8;
+                const voices = window.speechSynthesis.getVoices();
+                if(voices.length > 0) {
+                    const enVoice = voices.find(v => v.lang.includes('en-US')) || voices.find(v => v.lang.includes('en'));
+                    if(enVoice) u.voice = enVoice;
+                }
+                window.speechSynthesis.speak(u);
+            } catch (err) {
+                logDebug("發音錯誤: " + err.message);
+            }
+        }
+
+        // 語音辨識 (STT) Setup
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
+        
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.lang = 'en-US';
@@ -277,6 +172,7 @@
             
             recognition.onstart = () => {
                 state.status = 'listening';
+                logDebug("🎤 麥克風已開啟");
                 render();
             };
             
@@ -287,9 +183,11 @@
             };
             
             recognition.onerror = (e) => {
-                console.error(e);
+                let msg = "辨識錯誤";
+                if(e.error === 'not-allowed') msg = "❌ 麥克風權限被拒絕";
+                else if(e.error === 'no-speech') msg = "❌ 沒聽到聲音";
                 state.status = 'idle';
-                state.transcript = '無法辨識，請再試一次';
+                logDebug(msg);
                 render();
             };
             
@@ -301,24 +199,29 @@
             };
         }
 
-        // 核心邏輯：評估答案
+        function startRecording() {
+            if (!recognition) return;
+            try {
+                recognition.start();
+            } catch(e) {
+                console.log(e);
+            }
+        }
+
+        // 評估邏輯
         function evaluate(userSay) {
             state.status = 'evaluating';
             const currentQ = state.questions[state.currentIndex];
             const target = currentQ.en.toLowerCase();
             const input = userSay.toLowerCase();
             
-            // 寬鬆比對：只要包含目標字即可
             const isCorrect = input.includes(target) || target.includes(input);
             
             if (isCorrect) state.score += 10;
             
-            // 不管對錯，都要唸正確答案
             speak(currentQ.en);
-
             render();
 
-            // 1.5秒後進入下一題
             setTimeout(() => {
                 nextQuestion();
             }, 2000);
@@ -339,19 +242,37 @@
 
         function startGame(levelId) {
             const allWords = WORD_DATA[levelId];
-            // 每次隨機取 10 題，若單字庫夠大則不會重複感太重
-            // 若要全部練習，可移除 slice
             state.questions = [...allWords].sort(() => 0.5 - Math.random()).slice(0, 10);
             state.currentLevelId = levelId;
             state.currentIndex = 0;
             state.score = 0;
             state.status = 'idle';
             state.transcript = '';
+            
             state.view = 'game';
+            state.showMicModal = true; 
+            
+            if(!recognition) state.debugMsg = "⚠️ 瀏覽器不支援語音";
+            else state.debugMsg = "準備就緒";
+            
+            render();
+        }
+
+        function confirmMic(enable) {
+            state.showMicModal = false;
             render();
             
-            // 進場自動唸第一個字
-            setTimeout(() => speak(state.questions[0].en), 500);
+            setTimeout(() => {
+                speak(state.questions[0].en);
+            }, 300);
+
+            if (enable && recognition) {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.log("啟動麥克風錯誤", e);
+                }
+            }
         }
 
         function goHome() {
@@ -359,13 +280,35 @@
             render();
         }
 
-        // ==========================================
-        //  介面渲染 (UI Render)
-        // ==========================================
-
         function render() {
             const app = document.getElementById('app');
             let html = '';
+
+            // --- 麥克風權限詢問 Modal ---
+            let modalHtml = '';
+            if (state.showMicModal) {
+                modalHtml = `
+                    <div class="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-in">
+                        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg shadow-indigo-200">
+                                <i data-lucide="mic" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">是否開啟麥克風？</h3>
+                            <p class="text-slate-500 mb-6 text-sm">
+                                開啟後，您可以透過語音唸出單字來進行互動練習。
+                            </p>
+                            <div class="flex flex-col gap-3">
+                                <button onclick="confirmMic(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md">
+                                    好，開啟麥克風
+                                </button>
+                                <button onclick="confirmMic(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold py-3 rounded-xl transition-colors">
+                                    暫時不要
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
             if (state.view === 'home') {
                 html = `
@@ -373,6 +316,7 @@
                         <header class="mb-8 text-center">
                             <h1 class="text-3xl font-black text-indigo-600 mb-1">English Master</h1>
                             <p class="text-sm text-slate-500">發音・聽力・單字特訓</p>
+                            ${!SpeechRecognition ? '<div class="mt-2 bg-red-100 text-red-600 px-3 py-1 rounded text-xs inline-block">⚠️ 無法使用錄音功能</div>' : ''}
                         </header>
                         
                         <div class="grid gap-4">
@@ -395,7 +339,6 @@
                 const isEvaluating = state.status === 'evaluating';
                 const isListening = state.status === 'listening';
                 
-                // 判斷是否顯示結果顏色
                 let cardClass = "bg-white border-4 border-slate-100";
                 let feedbackHtml = "";
                 
@@ -403,17 +346,14 @@
                     const isCorrect = state.transcript.toLowerCase().includes(q.en.toLowerCase());
                     cardClass = isCorrect ? "bg-green-50 border-4 border-green-200" : "bg-red-50 border-4 border-red-200";
                     feedbackHtml = isCorrect 
-                        ? `<div class="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none correct-anim">
-                             <span class="text-8xl">🎉</span>
-                           </div>`
-                        : `<div class="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none shake">
-                             <span class="text-8xl">💪</span>
-                           </div>`;
+                        ? `<div class="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none correct-anim"><span class="text-8xl">🎉</span></div>`
+                        : `<div class="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none shake"><span class="text-8xl">💪</span></div>`;
                 }
 
                 html = `
                     <div class="w-full h-full flex flex-col p-6 fade-in relative">
-                        <!-- Top Bar -->
+                        ${modalHtml}
+                        
                         <div class="flex justify-between items-center mb-6">
                             <button onclick="goHome()" class="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
                                 <i data-lucide="arrow-left"></i>
@@ -426,44 +366,60 @@
                             </div>
                         </div>
 
-                        <!-- Card -->
-                        <div class="flex-1 flex flex-col items-center justify-center relative ${cardClass} rounded-3xl shadow-xl transition-colors duration-300 p-8 mb-8">
+                        <div class="flex-1 flex flex-col items-center justify-center relative ${cardClass} rounded-3xl shadow-xl transition-colors duration-300 p-8 mb-4">
                             ${feedbackHtml}
-                            
                             <div class="text-2xl text-slate-500 font-medium mb-2">${q.zh}</div>
                             <div class="text-5xl font-black text-slate-800 mb-6 text-center leading-tight break-all">
                                 ${q.en}
                             </div>
-                            
-                            <!-- 諧音提示 (重點功能) -->
-                            <div class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-lg font-bold border border-indigo-100 mb-8">
+                            <div class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-lg font-bold border border-indigo-100 mb-6">
                                 <span class="text-xs text-indigo-300 mr-2">讀音</span>${q.hint}
                             </div>
-
-                            <!-- 辨識結果顯示 -->
-                            <div class="h-8 text-center mb-4">
-                                ${isListening ? '<span class="text-red-500 animate-pulse font-bold">聆聽中...</span>' : ''}
-                                ${state.transcript ? `<span class="text-slate-400 text-sm">你說了: "${state.transcript}"</span>` : ''}
+                            <div class="h-8 text-center">
+                                ${isListening ? '<span class="text-rose-500 animate-pulse font-bold tracking-widest">● ● ●</span>' : ''}
+                                ${state.transcript && !isListening ? `<span class="text-slate-400 text-sm">你說了: "${state.transcript}"</span>` : ''}
                             </div>
                         </div>
 
-                        <!-- Controls -->
+                        <div id="debug-area" class="w-full text-center text-xs text-orange-400 bg-orange-50 p-2 rounded mb-4 h-8 flex items-center justify-center overflow-hidden">
+                            ${state.debugMsg || '系統正常'}
+                        </div>
+
                         <div class="flex items-center justify-center gap-6 mb-8">
-                            <button onclick="speak('${q.en}')" class="w-16 h-16 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center active:bg-slate-200 transition-colors">
+                            <button onclick="speak('${q.en}')" class="w-16 h-16 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center active:bg-slate-200 transition-colors shadow-sm">
                                 <i data-lucide="volume-2" class="w-8 h-8"></i>
                             </button>
 
                             ${SpeechRecognition ? `
-                                <button onclick="recognition.start()" class="w-24 h-24 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-95 transition-all ${isListening ? 'pulse-mic' : ''}">
-                                    <i data-lucide="mic" class="w-10 h-10"></i>
+                                <button onclick="startRecording()" class="group relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${isListening ? 'scale-110' : 'hover:scale-105 active:scale-95'}">
+                                    
+                                    <!-- 背景光暈/波動效果 (錄音時顯示) -->
+                                    ${isListening ? `
+                                        <div class="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20"></div>
+                                        <div class="absolute -inset-3 bg-rose-500/20 rounded-full animate-pulse"></div>
+                                    ` : `
+                                        <div class="absolute inset-0 bg-indigo-600/20 rounded-full blur-xl group-hover:bg-indigo-600/30 transition-all"></div>
+                                    `}
+                                    
+                                    <!-- 本體按鈕 -->
+                                    <div class="relative w-full h-full rounded-full flex items-center justify-center shadow-2xl border-4 border-white transition-all duration-300
+                                        ${isListening 
+                                            ? 'bg-gradient-to-br from-rose-500 to-red-600 shadow-rose-500/50' 
+                                            : 'bg-gradient-to-br from-indigo-500 to-blue-600 shadow-indigo-500/40'}">
+                                        
+                                        <i data-lucide="mic" class="w-10 h-10 text-white transition-transform duration-300 ${isListening ? 'scale-110' : ''}"></i>
+                                    </div>
+                                    
+                                    <!-- 提示文字標籤 -->
+                                    ${!isListening ? `
+                                        <div class="absolute -bottom-8 text-xs font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full shadow-sm border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            按我錄音
+                                        </div>
+                                    ` : ''}
                                 </button>
                             ` : `
-                                <div class="text-red-400 text-xs text-center w-24">此瀏覽器不支援錄音</div>
+                                <div class="text-red-400 text-xs text-center w-24">無錄音功能</div>
                             `}
-                        </div>
-                        
-                        <div class="text-center text-xs text-slate-300">
-                            點擊麥克風唸出單字
                         </div>
                     </div>
                 `;
@@ -472,13 +428,10 @@
                     <div class="w-full h-full flex flex-col items-center justify-center p-8 fade-in text-center">
                         <div class="text-8xl mb-4 animate-bounce">🏆</div>
                         <h2 class="text-3xl font-black text-slate-800 mb-2">測驗完成！</h2>
-                        <p class="text-slate-500 mb-8">太棒了，繼續保持！</p>
-                        
                         <div class="bg-white border-2 border-slate-100 w-full rounded-2xl p-6 mb-8 shadow-sm">
                             <div class="text-slate-400 text-sm mb-1">總得分</div>
                             <div class="text-6xl font-black text-indigo-500">${state.score}</div>
                         </div>
-                        
                         <button onclick="goHome()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-all">
                             回到主選單
                         </button>
@@ -490,9 +443,7 @@
             lucide.createIcons();
         }
 
-        // Init
         render();
-
     </script>
 </body>
 </html>
