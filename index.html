@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Master Kids - 發音修正版</title>
+    <title>English Master Kids - 穩定修正版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -51,9 +51,6 @@
         // ==========================================
         //  單字資料庫 (Data Center)
         // ==========================================
-        /* speakText: 專門給 TTS 唸的文字。
-           我們利用重複發音 + 例字 (e.g., "Ch, Ch, Cheese") 來模擬教學發音。
-        */
         const RAW_WORD_DATA = {
             // Level 1: KK 音標 (增加 speakText 導讀)
             level1: [
@@ -172,8 +169,7 @@
             isSecure: window.location.protocol === 'https:' || window.location.hostname === 'localhost',
             speechSupported: false,
             ttsSupported: false,
-            showHelpModal: false,
-            listenTimeout: null // 用於偵測錄音沒反應
+            showHelpModal: false
         };
 
         function initTTS() {
@@ -188,12 +184,10 @@
             if (!state.ttsSupported) return;
             window.speechSynthesis.cancel();
             
-            // 如果有傳入特定文字(例如提示正確答案)，就唸那個
-            // 如果沒有，則檢查資料庫是否有 speakText (給 Level 1, 2 用)
-            // 否則就唸原本的英文單字
+            // 預設要唸的字
             let textToSpeak = overrideText || text;
             
-            // 檢查是否是題目物件，且有 speakText 設定 (針對 Level 1, 2)
+            // 檢查是否為題目中的單字，並有 speakText 設定 (Level 1, 2)
             const currentQ = state.questions[state.currentIndex];
             if (!overrideText && currentQ && currentQ.en === text && currentQ.speakText) {
                 textToSpeak = currentQ.speakText;
@@ -230,37 +224,30 @@
                     state.transcript = '';
                     state.feedbackMsg = '請發音...';
                     render();
-                    
-                    // 設定超時偵測：如果 5 秒都沒收到結果，提示使用者
-                    clearTimeout(state.listenTimeout);
-                    state.listenTimeout = setTimeout(() => {
-                        if (state.status === 'listening') {
-                            state.status = 'fail';
-                            state.feedbackMsg = '沒聽到聲音，請再試一次 (或檢查權限)';
-                            recognition.stop();
-                            render();
-                        }
-                    }, 5000);
                 };
 
                 recognition.onresult = (event) => {
-                    clearTimeout(state.listenTimeout); // 收到結果，清除超時
                     const result = event.results[0][0].transcript;
                     state.transcript = result;
                     evaluate(result);
-                    recognition.stop();
+                    recognition.stop(); // 收到結果後立刻停止
                 };
 
                 recognition.onerror = (e) => {
-                    clearTimeout(state.listenTimeout);
                     console.log('Error', e);
                     if (e.error === 'not-allowed') {
                         state.status = 'fail';
                         state.feedbackMsg = '權限被拒';
                         state.showHelpModal = true;
                         render();
-                    } else if (e.error === 'no-speech') {
-                        // onend 會處理
+                    } 
+                    // 修正：no-speech 不顯示錯誤，只重置
+                    else if (e.error === 'no-speech') {
+                        if (state.status === 'listening') {
+                            state.status = 'idle';
+                            state.feedbackMsg = '';
+                            render();
+                        }
                     } else {
                         state.status = 'fail';
                         state.feedbackMsg = '辨識錯誤';
@@ -269,10 +256,8 @@
                 };
 
                 recognition.onend = () => {
-                    clearTimeout(state.listenTimeout);
                     if (state.status === 'listening') {
-                        state.status = 'fail';
-                        state.feedbackMsg = '沒聽到聲音，請靠近麥克風';
+                        state.status = 'idle'; // 靜默結束，不報錯
                         render();
                     }
                 };
@@ -294,15 +279,13 @@
         function evaluate(userSay) {
             const currentQ = state.questions[state.currentIndex];
             
-            // 標準化：轉小寫，移除括號編號，移除非英數字元(標點)
             const normalize = (str) => str.replace(/\s*\(\d+\)/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-            
             const targetClean = normalize(currentQ.en);
             const userClean = normalize(userSay);
 
             let isCorrect = userClean === targetClean || userClean.includes(targetClean) || targetClean.includes(userClean);
             
-            // Level 1 & 2 鼓勵模式：只要有收到聲音 (長度>0) 即算對，因為音標很難辨識精準
+            // Level 1 & 2 鼓勵模式：只要有收到聲音 (長度>0) 即算對
             if (state.currentLevelId === 'level1' || state.currentLevelId === 'level2') {
                 if (userSay.trim().length > 0) isCorrect = true;
             }
@@ -311,7 +294,7 @@
                 state.status = 'success';
                 state.score += 5; 
                 state.feedbackMsg = `Correct!`;
-                // 答對時，再唸一次正確答案加強記憶
+                // 答對時，再唸一次正確答案(或導讀)加強記憶
                 speak(currentQ.en);
                 render();
                 setTimeout(nextQuestion, 2000);
@@ -345,11 +328,16 @@
         }
 
         function nextQuestion() {
+            // 重要修正：切換題目時強制中斷錄音
+            if (recognition) recognition.abort();
+            
+            // 重置狀態
+            state.status = 'idle';
+            state.transcript = '';
+            state.feedbackMsg = '';
+
             if (state.currentIndex < state.questions.length - 1) {
                 state.currentIndex++;
-                state.status = 'idle';
-                state.transcript = '';
-                state.feedbackMsg = '';
                 render();
                 speak(state.questions[state.currentIndex].en);
             } else {
@@ -394,9 +382,6 @@
                                 <i data-lucide="x-circle" class="w-8 h-8"></i>
                             </button>
                             <div class="text-center">
-                                <div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i data-lucide="mic-off" class="w-6 h-6"></i>
-                                </div>
                                 <h3 class="text-xl font-bold text-slate-800 mb-4">麥克風權限被拒絕？</h3>
                                 <div class="text-left text-sm text-slate-600 space-y-4 bg-slate-50 p-4 rounded-xl">
                                     <p class="font-bold">如何開啟權限 (Chrome)：</p>
@@ -425,7 +410,7 @@
                     <div class="w-full p-6 pb-20 fade-in">
                         <header class="mb-6 text-center">
                             <h1 class="text-3xl font-black text-indigo-600 mb-1">English Master</h1>
-                            <p class="text-sm text-slate-500">智慧比對・發音教練</p>
+                            <p class="text-sm text-slate-500">穩定修正版</p>
                             ${!state.speechSupported ? '<div class="mt-2 bg-red-100 text-red-600 px-3 py-1 rounded text-xs inline-block">⚠️ 瀏覽器不支援錄音</div>' : ''}
                         </header>
                         
@@ -470,7 +455,6 @@
                     statusIcon = `<div class="absolute -top-6 right-0 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1"><i data-lucide="x"></i> Try Again</div>`;
                 }
 
-                // 字體大小自動調整
                 let textSizeClass = 'text-5xl';
                 if (q.en.length > 40) textSizeClass = 'text-lg';      
                 else if (q.en.length > 25) textSizeClass = 'text-xl'; 
