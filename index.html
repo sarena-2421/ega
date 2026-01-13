@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Master Kids - 穩定修正版</title>
+    <title>English Master Kids - 穩定修正版 v2.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -49,113 +49,62 @@
         //  單字資料庫
         // ==========================================
         const RAW_WORD_DATA = {
-            // Level 1: KK 音標
             level1: [
-                { en: "[i]", zh: "ㄧ (長音)", ipa: "/i/", note: "嘴角向兩旁拉開微笑。<br><span class='text-indigo-600 font-bold'>音似：一 (長音)</span>", speakText: "E... E... Eat" },
-                { en: "[ɪ]", zh: "ㄧ (短音)", ipa: "/ɪ/", note: "嘴角放鬆，短促發音。<br><span class='text-indigo-600 font-bold'>音似：一 (短促)</span>", speakText: "Ih... Ih... It" },
-                { en: "[e]", zh: "ㄝ一 (雙母音)", ipa: "/e/", note: "先唸ㄝ再滑向一。<br><span class='text-indigo-600 font-bold'>音似：ㄝ一</span>", speakText: "A... A... Eight" },
-                { en: "[ɛ]", zh: "ㄝ (短音)", ipa: "/ɛ/", note: "嘴巴微張，短促有力。<br><span class='text-indigo-600 font-bold'>音似：ㄝ</span>", speakText: "Eh... Eh... Egg" },
-                { en: "[æ]", zh: "蝴蝶音", ipa: "/æ/", note: "嘴巴張大成「啊」的形狀唸「ㄝ」。<br><span class='text-indigo-600 font-bold'>音似：梅 (的韻母)</span>", speakText: "A... A... Apple" },
-                { en: "[ɑ]", zh: "啊 (大口)", ipa: "/ɑ/", note: "嘴巴上下拉大。<br><span class='text-indigo-600 font-bold'>音似：啊 (看牙醫時)</span>", speakText: "Ah... Ah... Hot" },
-                { en: "[ʌ]", zh: "啊 (短音)", ipa: "/ʌ/", note: "嘴巴微張，短促。<br><span class='text-indigo-600 font-bold'>音似：啊 (短)</span>", speakText: "Uh... Uh... Up" },
-                { en: "[ə]", zh: "ㄜ (輕音)", ipa: "/ə/", note: "嘴巴放鬆，輕輕唸。<br><span class='text-indigo-600 font-bold'>音似：ㄜ (輕聲)</span>", speakText: "Uh... Uh... About" },
-                { en: "[ɔ]", zh: "喔 (長音)", ipa: "/ɔ/", note: "嘴巴圓圓的。<br><span class='text-indigo-600 font-bold'>音似：喔</span>", speakText: "Aw... Aw... All" },
-                { en: "[o]", zh: "歐 (雙母音)", ipa: "/o/", note: "先唸喔再滑向ㄨ。<br><span class='text-indigo-600 font-bold'>音似：歐</span>", speakText: "Oh... Oh... Go" },
-                { en: "[u]", zh: "嗚 (長音)", ipa: "/u/", note: "嘴唇嘟圓。<br><span class='text-indigo-600 font-bold'>音似：嗚 (長)</span>", speakText: "Oo... Oo... Food" },
-                { en: "[ʊ]", zh: "嗚 (短音)", ipa: "/ʊ/", note: "嘴巴放鬆一點。<br><span class='text-indigo-600 font-bold'>音似：嗚 (短)</span>", speakText: "Uh... Uh... Book" },
-                { en: "[ɝ]", zh: "儿 (長音)", ipa: "/3/ or /ɝ/", note: "捲舌音。<br><span class='text-indigo-600 font-bold'>音似：二 (捲舌)</span>", speakText: "Er... Er... Bird" },
-                { en: "[ɚ]", zh: "儿 (短音)", ipa: "/2/ or /ɚ/", note: "輕聲捲舌。<br><span class='text-indigo-600 font-bold'>音似：二 (輕聲)</span>", speakText: "Er... Er... Sister" },
-                { en: "[aɪ]", zh: "ㄞ", ipa: "/aɪ/", note: "啊+一。<br><span class='text-indigo-600 font-bold'>音似：愛</span>", speakText: "I... I... Ice" },
-                { en: "[aʊ]", zh: "ㄠ", ipa: "/aʊ/", note: "啊+嗚。<br><span class='text-indigo-600 font-bold'>音似：奧</span>", speakText: "Ow... Ow... Out" },
-                { en: "[ɔɪ]", zh: "ㄛ一", ipa: "/ɔɪ/", note: "喔+一。<br><span class='text-indigo-600 font-bold'>音似：喔一</span>", speakText: "Oy... Oy... Boy" }
+                { en: "[i]", zh: "ㄧ (長音)", ipa: "/i/", note: "嘴角拉開微笑。音似：一 (長音)", speakText: "E... E... Eat" },
+                { en: "[ɪ]", zh: "ㄧ (短音)", ipa: "/ɪ/", note: "嘴角放鬆。音似：一 (短促)", speakText: "Ih... Ih... It" },
+                { en: "[e]", zh: "ㄝ一 (雙母音)", ipa: "/e/", note: "先唸ㄝ再滑向一。音似：ㄝ一", speakText: "A... A... Eight" },
+                { en: "[ɛ]", zh: "ㄝ (短音)", ipa: "/ɛ/", note: "嘴巴微張。音似：ㄝ", speakText: "Eh... Eh... Egg" },
+                { en: "[æ]", zh: "蝴蝶音", ipa: "/æ/", note: "嘴張大唸「ㄝ」。音似：梅", speakText: "A... A... Apple" },
+                { en: "[ɑ]", zh: "啊 (大口)", ipa: "/ɑ/", note: "嘴巴上下拉大。音似：啊", speakText: "Ah... Ah... Hot" },
+                { en: "[ʌ]", zh: "啊 (短音)", ipa: "/ʌ/", note: "嘴巴微張。音似：啊 (短)", speakText: "Uh... Uh... Up" },
+                { en: "[ə]", zh: "ㄜ (輕音)", ipa: "/ə/", note: "嘴巴放鬆。音似：ㄜ (輕聲)", speakText: "Uh... Uh... About" },
+                { en: "[ɔ]", zh: "喔 (長音)", ipa: "/ɔ/", note: "嘴巴圓圓的。音似：喔", speakText: "Aw... Aw... All" },
+                { en: "[o]", zh: "歐 (雙母音)", ipa: "/o/", note: "先唸喔再滑向ㄨ。音似：歐", speakText: "Oh... Oh... Go" },
+                { en: "[u]", zh: "嗚 (長音)", ipa: "/u/", note: "嘴唇嘟圓。音似：嗚 (長)", speakText: "Oo... Oo... Food" },
+                { en: "[ʊ]", zh: "嗚 (短音)", ipa: "/ʊ/", note: "嘴巴放鬆一點。音似：嗚 (短)", speakText: "Uh... Uh... Book" },
+                { en: "[ɝ]", zh: "儿 (長音)", ipa: "/3/ or /ɝ/", note: "捲舌音。音似：二 (捲舌)", speakText: "Er... Er... Bird" },
+                { en: "[ɚ]", zh: "儿 (短音)", ipa: "/2/ or /ɚ/", note: "輕聲捲舌。音似：二 (輕聲)", speakText: "Er... Er... Sister" },
+                { en: "[aɪ]", zh: "ㄞ", ipa: "/aɪ/", note: "啊+一。音似：愛", speakText: "I... I... Ice" },
+                { en: "[aʊ]", zh: "ㄠ", ipa: "/aʊ/", note: "啊+嗚。音似：奧", speakText: "Ow... Ow... Out" },
+                { en: "[ɔɪ]", zh: "ㄛ一", ipa: "/ɔɪ/", note: "喔+一。音似：喔一", speakText: "Oy... Oy... Boy" }
             ],
-            // Level 2: 複合子音
             level2: [
-                { en: "CH", zh: "CH 發音", ipa: "/tʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：去 / 吃</span>", speakText: "Chuh... Cheese" },
-                { en: "SH", zh: "SH 發音", ipa: "/ʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：噓</span>", speakText: "Shuh... Sheep" },
-                { en: "TH", zh: "TH (無聲)", ipa: "/θ/", note: "咬舌頭吹氣。<br><span class='text-indigo-600 font-bold'>音似：斯 (大舌頭)</span>", speakText: "Thhh... Thank" },
-                { en: "TH", zh: "TH (有聲)", ipa: "/ð/", note: "咬舌頭震動。<br><span class='text-indigo-600 font-bold'>音似：日 (大舌頭)</span>", speakText: "Thzz... This" },
-                { en: "PH", zh: "PH 發音", ipa: "/f/", note: "咬下唇。<br><span class='text-indigo-600 font-bold'>音似：夫</span>", speakText: "Fuh... Phone" },
-                { en: "WH", zh: "WH 發音", ipa: "/w/", note: "圓唇。<br><span class='text-indigo-600 font-bold'>音似：ㄨ</span>", speakText: "Wuh... White" },
-                { en: "NG", zh: "NG 字尾音", ipa: "/ŋ/", note: "鼻音。<br><span class='text-indigo-600 font-bold'>音似：嗯 (Sing的尾音)</span>", speakText: "Ing... Sing" },
-                { en: "CK", zh: "CK 字尾音", ipa: "/k/", note: "短促。<br><span class='text-indigo-600 font-bold'>音似：克</span>", speakText: "Kuh... Duck" },
-                { en: "QU", zh: "QU 發音", ipa: "/kw/", note: "圓唇張開。<br><span class='text-indigo-600 font-bold'>音似：夸</span>", speakText: "Kwuh... Queen" },
-                { en: "BL", zh: "BL 混合音", ipa: "/bl/", note: "緊閉雙唇後彈開。<br><span class='text-indigo-600 font-bold'>音似：布魯</span>", speakText: "Buh... Luh... Blue" },
-                { en: "CL", zh: "CL 混合音", ipa: "/kl/", note: "舌根音。<br><span class='text-indigo-600 font-bold'>音似：克魯</span>", speakText: "Kuh... Luh... Class" },
-                { en: "FL", zh: "FL 混合音", ipa: "/fl/", note: "咬下唇。<br><span class='text-indigo-600 font-bold'>音似：夫魯</span>", speakText: "Fuh... Luh... Fly" },
-                { en: "GL", zh: "GL 混合音", ipa: "/gl/", note: "舌根音。<br><span class='text-indigo-600 font-bold'>音似：葛魯</span>", speakText: "Guh... Luh... Glass" },
-                { en: "PL", zh: "PL 混合音", ipa: "/pl/", note: "緊閉雙唇。<br><span class='text-indigo-600 font-bold'>音似：普魯</span>", speakText: "Puh... Luh... Play" },
-                { en: "SL", zh: "SL 混合音", ipa: "/sl/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：斯魯</span>", speakText: "Sss... Luh... Slow" },
-                { en: "BR", zh: "BR 混合音", ipa: "/br/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：布若</span>", speakText: "Buh... Ruh... Bread" },
-                { en: "CR", zh: "CR 混合音", ipa: "/kr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：克若</span>", speakText: "Kuh... Ruh... Cry" },
-                { en: "DR", zh: "DR 混合音", ipa: "/dr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：朱若</span>", speakText: "Duh... Ruh... Dream" },
-                { en: "FR", zh: "FR 混合音", ipa: "/fr/", note: "咬下唇捲舌。<br><span class='text-indigo-600 font-bold'>音似：夫若</span>", speakText: "Fuh... Ruh... Frog" },
-                { en: "GR", zh: "GR 混合音", ipa: "/gr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：葛若</span>", speakText: "Guh... Ruh... Green" },
-                { en: "PR", zh: "PR 混合音", ipa: "/pr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：普若</span>", speakText: "Puh... Ruh... Price" },
-                { en: "SP", zh: "SP 混合音", ipa: "/sp/", note: "S後P不送氣。<br><span class='text-indigo-600 font-bold'>音似：斯逼</span>", speakText: "Sss... Puh... Speak" },
-                { en: "ST", zh: "ST 混合音", ipa: "/st/", note: "S後T不送氣。<br><span class='text-indigo-600 font-bold'>音似：斯滴</span>", speakText: "Sss... Tuh... Stop" },
-                { en: "SW", zh: "SW 混合音", ipa: "/sw/", note: "圓唇。<br><span class='text-indigo-600 font-bold'>音似：斯我</span>", speakText: "Sss... Wuh... Swim" },
-                { en: "SCR", zh: "SCR 混合音", ipa: "/skr/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯格若</span>", speakText: "Scr... Screen" },
-                { en: "SHR", zh: "SHR 混合音", ipa: "/ʃr/", note: "噓+捲舌。<br><span class='text-indigo-600 font-bold'>音似：許若</span>", speakText: "Shr... Shrimp" },
-                { en: "SPL", zh: "SPL 混合音", ipa: "/spl/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯布魯</span>", speakText: "Spl... Splash" },
-                { en: "SPR", zh: "SPR 混合音", ipa: "/spr/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯布若</span>", speakText: "Spr... Spring" },
-                { en: "STR", zh: "STR 混合音", ipa: "/str/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯朱若</span>", speakText: "Str... Street" },
-                { en: "THR", zh: "THR 混合音", ipa: "/θr/", note: "咬舌+捲舌。<br><span class='text-indigo-600 font-bold'>音似：斯若</span>", speakText: "Thr... Three" }
+                { en: "CH", zh: "CH 發音", ipa: "/tʃ/", note: "氣音。音似：去 / 吃", speakText: "Chuh... Cheese" },
+                { en: "SH", zh: "SH 發音", ipa: "/ʃ/", note: "氣音。音似：噓", speakText: "Shuh... Sheep" },
+                { en: "TH", zh: "TH (無聲)", ipa: "/θ/", note: "咬舌吹氣。音似：斯", speakText: "Thhh... Thank" },
+                { en: "TH", zh: "TH (有聲)", ipa: "/ð/", note: "咬舌震動。音似：日", speakText: "Thzz... This" },
+                { en: "PH", zh: "PH 發音", ipa: "/f/", note: "咬下唇。音似：夫", speakText: "Fuh... Phone" },
+                { en: "WH", zh: "WH 發音", ipa: "/w/", note: "圓唇。音似：ㄨ", speakText: "Wuh... White" },
+                { en: "NG", zh: "NG 字尾音", ipa: "/ŋ/", note: "鼻音。音似：嗯", speakText: "Ing... Sing" },
+                { en: "CK", zh: "CK 字尾音", ipa: "/k/", note: "短促。音似：克", speakText: "Kuh... Duck" },
+                { en: "QU", zh: "QU 發音", ipa: "/kw/", note: "圓唇。音似：夸", speakText: "Kwuh... Queen" },
+                { en: "BL", zh: "BL 混合音", ipa: "/bl/", note: "音似：布魯", speakText: "Buh... Luh... Blue" }
             ],
-            level3: [ { en: "Book", zh: "書", ipa: "/bʊk/", note: "oo 發短音 /ʊ/。<br><span class='text-indigo-600 font-bold'>音似：布可</span>" }, { en: "Cat", zh: "貓", ipa: "/kæt/", note: "a 發蝴蝶音 /æ/。<br><span class='text-indigo-600 font-bold'>音似：凱特</span>" } ],
-            level4: [ { en: "Family", zh: "家庭", ipa: "/ˈfæməli/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：非麼離</span>" } ],
-            level5: [ { en: "Apple", zh: "蘋果", ipa: "/ˈæpl/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：ㄟ-剖</span>" } ],
-            level6: [ { en: "Student", zh: "學生", ipa: "/ˈstudnt/", note: "u 發 /u/。<br><span class='text-indigo-600 font-bold'>音似：死-丟-等t</span>" } ],
-            level7: [ { en: "Do you need a hand?", zh: "你需要幫忙嗎？", ipa: "/nid ə hænd/", note: "Need a 連讀。<br><span class='text-indigo-600 font-bold'>音似：度 油 尼 ㄜ 漢?</span>" }, { en: "How much is this?", zh: "請問這個多少錢？", ipa: "/haʊ mʌtʃ ɪz ðɪs/", note: "Is this 連讀。<br><span class='text-indigo-600 font-bold'>音似：豪 罵區 依z 迪斯?</span>" } ],
-            level8: [ { en: "Go", zh: "去", ipa: "/goʊ/", note: "o 發 /oʊ/。<br><span class='text-indigo-600 font-bold'>音似：購</span>" } ],
-            level9: [ { en: "Time", zh: "時間", ipa: "/taɪm/", note: "i 發 /aɪ/。<br><span class='text-indigo-600 font-bold'>音似：泰m</span>" } ],
-            level10: [ { en: "Acquire", zh: "獲得", ipa: "/əˈkwaɪər/", note: "A 發 /ə/。<br><span class='text-indigo-600 font-bold'>音似：額-快-爾</span>" } ]
+            level3: [ { en: "Book", zh: "書", ipa: "/bʊk/", note: "oo 發短音 /ʊ/。" }, { en: "Cat", zh: "貓", ipa: "/kæt/", note: "a 發蝴蝶音 /æ/。" }, { en: "Dog", zh: "狗", ipa: "/dɔg/", note: "o 發短音 /ɔ/。" }, { en: "Fish", zh: "魚", ipa: "/fɪʃ/", note: "i 發短音 /ɪ/。" } ],
+            level4: [ { en: "Family", zh: "家庭", ipa: "/ˈfæməli/", note: "a 發 /æ/。" }, { en: "School", zh: "學校", ipa: "/skul/", note: "oo 發 /u/。" } ],
+            level5: [ { en: "Apple", zh: "蘋果", ipa: "/ˈæpl/", note: "a 發 /æ/。" }, { en: "Banana", zh: "香蕉", ipa: "/bəˈnænə/", note: "a 發 /ə/ 與 /æ/。" } ],
+            level6: [ { en: "Student", zh: "學生", ipa: "/ˈstudnt/", note: "u 發 /u/。" }, { en: "Teacher", zh: "老師", ipa: "/ˈtitʃər/", note: "ea 發 /i/。" } ],
+            level7: [ { en: "Do you need a hand?", zh: "你需要幫忙嗎？", ipa: "/nid ə hænd/", note: "連讀練習。" }, { en: "How much is this?", zh: "請問這個多少錢？", ipa: "/haʊ mʌtʃ ɪz ðɪs/", note: "連讀練習。" } ],
+            level8: [ { en: "Go", zh: "去", ipa: "/goʊ/", note: "o 發 /goʊ/。" } ],
+            level9: [ { en: "Time", zh: "時間", ipa: "/taɪm/", note: "i 發 /aɪ/。" } ],
+            level10: [ { en: "Acquire", zh: "獲得", ipa: "/əˈkwaɪər/", note: "三音節練習。" } ]
         };
 
-        let WORD_DATA = {};
-        const QUESTIONS_PER_ROUND = 20;
-        const TARGET_WORD_COUNT = 600;
-
-        function expandDataTo600() {
-            try {
-                WORD_DATA = JSON.parse(JSON.stringify(RAW_WORD_DATA));
-                for (const level in WORD_DATA) {
-                    if (level === 'level1') continue;
-                    const originalWords = WORD_DATA[level];
-                    const currentCount = originalWords.length;
-                    if (currentCount < TARGET_WORD_COUNT) {
-                        const needed = TARGET_WORD_COUNT - currentCount;
-                        for (let i = 0; i < needed; i++) {
-                            const sourceWord = originalWords[i % currentCount];
-                            WORD_DATA[level].push({
-                                en: sourceWord.en, 
-                                zh: sourceWord.zh,
-                                ipa: sourceWord.ipa,
-                                note: sourceWord.note,
-                                speakText: sourceWord.speakText
-                            });
-                        }
-                    }
-                    WORD_DATA[level].sort(() => 0.5 - Math.random());
-                }
-            } catch(e) {
-                console.error("Data error", e);
-            }
-        }
-
-        const LEVELS = [
-            { id: 'level1', title: '1. 母音基礎', desc: '純母音 (A, E, I, O, U) 發音嘴型', color: 'bg-yellow-400' },
+        const LEVEL_META = [
+            { id: 'level1', title: '1. 母音基礎', desc: '純母音 (A, E, I, O, U) 發音練習', color: 'bg-yellow-400' },
             { id: 'level2', title: '2. 複合子音', desc: 'Digraphs & Blends (擬聲導讀)', color: 'bg-orange-400' },
-            { id: 'level3', title: '3. 國小單字', desc: '基礎字彙與短母音', color: 'bg-green-400' },
-            { id: 'level4', title: '4. 國中單字', desc: '進階閱讀字彙', color: 'bg-teal-400' },
-            { id: 'level5', title: '5. 高一核心', desc: '學術入門字彙', color: 'bg-blue-400' },
-            { id: 'level6', title: '6. 高二進階', desc: '深度閱讀字彙', color: 'bg-indigo-400' },
-            { id: 'level7', title: '7. 日常會話', desc: '600句道地生活短句', color: 'bg-purple-400' },
-            { id: 'level8', title: '8. 文法動詞', desc: '動詞變化與文法', color: 'bg-pink-400' },
-            { id: 'level9', title: '9. 高三精進', desc: '學術與抽象概念', color: 'bg-rose-400' },
-            { id: 'level10', title: '10. 學測/多益', desc: '高頻考試必備單字', color: 'bg-stone-500' }
+            { id: 'level3', title: '3. 國小單字', desc: '基礎字彙與短母音練習', color: 'bg-green-400' },
+            { id: 'level4', title: '4. 國中單字', desc: '進階閱讀常用字彙', color: 'bg-teal-400' },
+            { id: 'level5', title: '5. 高一核心', desc: '學術入門與高中核心單字', color: 'bg-blue-400' },
+            { id: 'level6', title: '6. 高二進階', desc: '深度閱讀與進階應用', color: 'bg-indigo-400' },
+            { id: 'level7', title: '7. 日常會話', desc: '道地生活短句與連讀練習', color: 'bg-purple-400' },
+            { id: 'level8', title: '8. 文法動詞', desc: '常用動詞變化與句型結構', color: 'bg-pink-400' },
+            { id: 'level9', title: '9. 高三精進', desc: '學術研究與抽象概念字彙', color: 'bg-rose-400' },
+            { id: 'level10', title: '10. 學測/多益', desc: '高頻考試必備字彙', color: 'bg-stone-500' }
         ];
 
+        const QUESTIONS_PER_ROUND = 20;
+        let WORD_DATA = {};
         let state = {
             view: 'home',
             currentLevelId: '',
@@ -165,60 +114,139 @@
             status: 'idle',
             transcript: '', 
             feedbackMsg: '',
-            
-            isSecure: window.location.protocol === 'https:' || window.location.hostname === 'localhost',
+            timerId: null,
+            transitionLock: false,
             speechSupported: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
-            ttsSupported: 'speechSynthesis' in window,
-            
-            showHelpModal: false,
-            // 修復核心：新增 timerId 管理所有的 setTimeout
-            timerId: null 
+            ttsSupported: 'speechSynthesis' in window
         };
 
-        function initTTS() {
-            if ('speechSynthesis' in window) {
-                state.ttsSupported = true;
-                window.speechSynthesis.getVoices();
+        // ==========================================
+        //  核心功能定義
+        // ==========================================
+
+        function prepareData() {
+            WORD_DATA = JSON.parse(JSON.stringify(RAW_WORD_DATA));
+            for (const key in WORD_DATA) {
+                let list = WORD_DATA[key];
+                // 數據自動擴充：如果單字不夠 20 個，則重複填充
+                if (list.length > 0 && list.length < QUESTIONS_PER_ROUND && key !== 'level1') {
+                    const originalCount = list.length;
+                    for (let i = 0; i < (QUESTIONS_PER_ROUND - originalCount); i++) {
+                        list.push(JSON.parse(JSON.stringify(list[i % originalCount])));
+                    }
+                }
+                // 除了 Level 1 保持順序，其餘打亂
+                if (key !== 'level1') {
+                    list.sort(() => 0.5 - Math.random());
+                }
             }
         }
 
-        // 修復核心：安全的 setTimeout
-        function setSafeTimeout(callback, delay) {
-            clearSafeTimeout(); // 先清除舊的
-            state.timerId = setTimeout(() => {
-                state.timerId = null;
-                callback();
-            }, delay);
-        }
-
-        function clearSafeTimeout() {
-            if (state.timerId) {
-                clearTimeout(state.timerId);
-                state.timerId = null;
-            }
-        }
-
-        function speak(text, overrideText) {
-            if (!state.ttsSupported) return;
-            // 每次發音前強制停止之前的
+        function stopEverything() {
+            if (state.timerId) { clearTimeout(state.timerId); state.timerId = null; }
+            state.transitionLock = false;
             try { window.speechSynthesis.cancel(); } catch(e){}
+            if (recognition) { try { recognition.abort(); } catch(e){} }
+        }
+
+        function speak(text, callback) {
+            if (!state.ttsSupported) return;
+            window.speechSynthesis.cancel();
             
-            let textToSpeak = overrideText || text;
             const currentQ = state.questions[state.currentIndex];
-            if (!overrideText && currentQ && currentQ.en === text && currentQ.speakText) {
+            let textToSpeak = text;
+            if (currentQ && currentQ.en === text && currentQ.speakText) {
                 textToSpeak = currentQ.speakText;
-            } else if (!overrideText) {
-                textToSpeak = text.replace(/\s*\(\d+\)/, "");
+            } else {
+                textToSpeak = text.replace(/\[|\]/g, "");
             }
             
             const u = new SpeechSynthesisUtterance(textToSpeak);
             u.lang = 'en-US';
-            u.rate = 0.8; 
+            u.rate = 0.8;
+            u.onend = () => { if (callback) callback(); };
+            
             const voices = window.speechSynthesis.getVoices();
-            const enVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || 
-                            voices.find(v => v.lang === 'en-US');
+            const enVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang === 'en-US');
             if(enVoice) u.voice = enVoice;
             window.speechSynthesis.speak(u);
+        }
+
+        function evaluate(userSay) {
+            if (state.transitionLock) return;
+            const currentQ = state.questions[state.currentIndex];
+            if (!currentQ) return;
+
+            const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const targetClean = normalize(currentQ.en);
+            const userClean = normalize(userSay);
+
+            let isCorrect = (state.currentLevelId === 'level1' || state.currentLevelId === 'level2') 
+                ? (userSay.trim().length > 0)
+                : (userClean && (userClean === targetClean || userClean.includes(targetClean)));
+
+            if (isCorrect) {
+                state.status = 'success';
+                state.score += 5; 
+                state.feedbackMsg = `Correct!`;
+                state.transitionLock = true;
+                render();
+                speak(currentQ.en);
+                state.timerId = setTimeout(() => {
+                    state.transitionLock = false;
+                    nextQuestion();
+                }, 1800);
+            } else {
+                state.status = 'fail';
+                state.feedbackMsg = `聽到: "${userSay}"`;
+                render();
+                speak(currentQ.en);
+            }
+        }
+
+        function startGame(levelId) {
+            stopEverything();
+            const allWords = WORD_DATA[levelId];
+            if (!allWords || allWords.length === 0) return;
+
+            state.questions = (levelId === 'level1') ? [...allWords] : [...allWords].slice(0, QUESTIONS_PER_ROUND);
+            state.currentLevelId = levelId;
+            state.currentIndex = 0;
+            state.score = 0;
+            state.view = 'game';
+            state.status = 'idle';
+            state.transcript = '';
+            state.feedbackMsg = '';
+            render();
+            state.timerId = setTimeout(() => speak(state.questions[0].en), 500);
+        }
+
+        function nextQuestion() {
+            if (state.status === 'success') {
+                state.transitionLock = false;
+            }
+            
+            stopEverything(); 
+            
+            if (state.currentIndex < state.questions.length - 1) {
+                state.currentIndex++;
+                state.status = 'idle';
+                state.transcript = '';
+                state.feedbackMsg = '';
+                render();
+                state.timerId = setTimeout(() => {
+                    if (state.view === 'game') speak(state.questions[state.currentIndex].en);
+                }, 300);
+            } else {
+                state.view = 'result';
+                render();
+            }
+        }
+
+        function goHome() {
+            stopEverything();
+            state.view = 'home';
+            render();
         }
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -228,326 +256,125 @@
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
                 recognition.lang = 'en-US';
-                recognition.continuous = false;
-                recognition.interimResults = false;
-
                 recognition.onstart = () => {
                     state.status = 'listening';
                     state.transcript = '';
                     state.feedbackMsg = '請發音...';
                     render();
                 };
-
                 recognition.onresult = (event) => {
                     const result = event.results[0][0].transcript;
                     state.transcript = result;
                     evaluate(result);
                 };
-
                 recognition.onerror = (e) => {
-                    console.log('Error', e);
-                    // 錯誤發生時，不要自動發音，只更新狀態
                     state.status = 'idle'; 
-                    if (e.error === 'not-allowed') {
-                        state.feedbackMsg = '權限被拒';
-                        state.showHelpModal = true;
-                    } else if (e.error === 'no-speech') {
-                        state.feedbackMsg = '沒聽到聲音';
-                    } else {
-                        state.feedbackMsg = '無法辨識';
-                    }
+                    state.feedbackMsg = (e.error === 'no-speech') ? '沒聽到聲音' : '辨識錯誤';
                     render();
                 };
-
-                recognition.onend = () => {
-                    if (state.status === 'listening') {
-                        state.status = 'idle';
-                        state.feedbackMsg = '沒聽到聲音';
-                        render();
-                    }
-                };
             }
         }
 
-        function startRecording() {
-            if (!state.speechSupported) {
-                alert("您的瀏覽器不支援錄音");
-                return;
+        function initTTS() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
             }
-            // 錄音前先停止發音，避免錄到系統聲音
-            try { window.speechSynthesis.cancel(); } catch(e){}
-            try { recognition.start(); } catch(e) {}
-        }
-
-        function evaluate(userSay) {
-            const currentQ = state.questions[state.currentIndex];
-            
-            // 強力標準化
-            const normalize = (str) => str.replace(/\s*\(\d+\)/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-            const targetClean = normalize(currentQ.en);
-            const userClean = normalize(userSay);
-
-            let isCorrect = false;
-
-            // 模式 1: 鼓勵模式 (Level 1, 2)
-            if (state.currentLevelId === 'level1' || state.currentLevelId === 'level2') {
-                if (userSay && userSay.trim().length > 0) isCorrect = true;
-            } 
-            // 模式 2: 精準比對
-            else {
-                if (userClean && targetClean && (userClean === targetClean || userClean.includes(targetClean) || targetClean.includes(userClean))) {
-                    isCorrect = true;
-                }
-            }
-
-            if (isCorrect) {
-                state.status = 'success';
-                state.score += 5; 
-                state.feedbackMsg = `Correct!`;
-                // 答對時發音確認
-                speak(currentQ.en);
-                render();
-                
-                // 修復核心：使用 safeTimeout 確保可以被取消
-                const thisQuestionIndex = state.currentIndex;
-                setSafeTimeout(() => {
-                    // 再次確認還在同一題才跳轉 (雙重保險)
-                    if (state.currentIndex === thisQuestionIndex) {
-                        nextQuestion();
-                    }
-                }, 2000);
-            } else {
-                state.status = 'fail';
-                state.feedbackMsg = `聽到: "${userSay}"`;
-                // 答錯時發音示範
-                speak(currentQ.en);
-                render();
-            }
-        }
-
-        function startGame(levelId) {
-            const allWords = WORD_DATA[levelId];
-            if (!allWords || allWords.length === 0) return;
-
-            state.questions = (levelId === 'level1') 
-                ? [...allWords] 
-                : [...allWords].sort(() => 0.5 - Math.random()).slice(0, QUESTIONS_PER_ROUND);
-            
-            state.currentLevelId = levelId;
-            state.currentIndex = 0;
-            state.score = 0;
-            state.view = 'game';
-            state.status = 'idle';
-            state.transcript = '';
-            state.feedbackMsg = '';
-            
-            // 清除之前的計時器
-            clearSafeTimeout();
-
-            render();
-            // 延遲播放第一題
-            setSafeTimeout(() => speak(state.questions[0].en), 500);
-        }
-
-        // 全域跳題函式 (同步執行)
-        function nextQuestion() {
-            // 1. 修復核心：強制清除所有等待中的 setTimeout
-            clearSafeTimeout();
-
-            // 2. 修復核心：強制停止錄音與發音
-            if (recognition) try { recognition.abort(); } catch(e){}
-            try { window.speechSynthesis.cancel(); } catch(e){}
-
-            // 3. 重置狀態
-            state.status = 'idle';
-            state.transcript = '';
-            state.feedbackMsg = '';
-
-            // 4. 更新索引
-            if (state.currentIndex < state.questions.length - 1) {
-                state.currentIndex++;
-                render();
-                // 延遲發音，使用 safeTimeout
-                setSafeTimeout(() => speak(state.questions[state.currentIndex].en), 300);
-            } else {
-                state.view = 'result';
-                render();
-                speak("Mission Complete!");
-            }
-        }
-
-        function goHome() {
-            // 回首頁時也要清除所有計時器和動作
-            clearSafeTimeout();
-            if (recognition) try { recognition.abort(); } catch(e){}
-            try { window.speechSynthesis.cancel(); } catch(e){}
-            
-            state.view = 'home';
-            render();
-        }
-
-        function toggleHelp(show) {
-            state.showHelpModal = show;
-            render();
-        }
-
-        function highlightVowels(word) {
-            const displayWord = word.replace(/\s*\(\d+\)/, "");
-            if (displayWord.startsWith('[') && displayWord.endsWith(']')) return displayWord;
-            return displayWord.replace(/([aeiouAEIOU])/g, '<span class="text-rose-500">$1</span>');
         }
 
         function render() {
             const app = document.getElementById('app');
             let html = '';
 
-            // ... Helper ...
-            let secureWarning = '';
-            if (!state.isSecure && state.view === 'home') {
-                secureWarning = `<div class="bg-amber-100 text-amber-800 px-4 py-2 text-xs text-center border-b border-amber-200">⚠️ 網址非 HTTPS，麥克風可能會失效</div>`;
-            }
-
-            let helpModalHtml = '';
-            if (state.showHelpModal) {
-                helpModalHtml = `
-                    <div class="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 fade-in">
-                        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative">
-                            <button onclick="toggleHelp(false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i data-lucide="x-circle" class="w-8 h-8"></i></button>
-                            <div class="text-center">
-                                <h3 class="text-xl font-bold text-slate-800 mb-4">麥克風設定</h3>
-                                <p class="text-gray-600 text-sm mb-4">請點擊網址列旁的鎖頭符號 🔒，並允許麥克風權限。</p>
-                                <button onclick="toggleHelp(false)" class="mt-4 w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">我知道了</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
             if (state.view === 'home') {
-                const getCount = (id) => WORD_DATA[id] ? WORD_DATA[id].length : 0;
                 html = `
-                    ${secureWarning}
                     <div class="w-full p-6 pb-20 fade-in">
                         <header class="mb-6 text-center">
                             <h1 class="text-3xl font-black text-indigo-600 mb-1">English Master</h1>
-                            <p class="text-sm text-slate-500">穩定重構版 v2.0</p>
-                            ${!state.speechSupported ? '<div class="mt-2 bg-red-100 text-red-600 px-3 py-1 rounded text-xs inline-block">⚠️ 瀏覽器不支援錄音</div>' : ''}
+                            <p class="text-sm text-slate-500">穩定修正版 v2.3</p>
                         </header>
-                        <div class="flex justify-center mb-6">
-                            <button onclick="toggleHelp(true)" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-500 px-4 py-2 rounded-full text-sm shadow-sm hover:bg-slate-50">
-                                <i data-lucide="settings-2" class="w-4 h-4"></i> 設定教學
-                            </button>
-                        </div>
                         <div class="grid gap-4">
-                            ${LEVELS.map(lvl => `
-                                <button onclick="startGame('${lvl.id}')" class="relative overflow-hidden rounded-2xl shadow-md transition-transform active:scale-95 text-left bg-white border border-slate-100">
-                                    <div class="${lvl.color} p-4 text-white">
-                                        <div class="font-bold text-lg">${lvl.title}</div>
-                                        <div class="text-xs opacity-90">${lvl.desc}</div>
-                                    </div>
-                                    <div class="p-3 flex justify-between items-center text-slate-500 text-sm">
-                                        <span>開始 (${lvl.id === 'level1' ? WORD_DATA['level1'].length : QUESTIONS_PER_ROUND} 題)</span>
-                                        <i data-lucide="mic" class="w-5 h-5"></i>
-                                    </div>
-                                </button>
-                            `).join('')}
+                            ${LEVEL_META.map((lvl) => {
+                                return `
+                                    <button onclick="startGame('${lvl.id}')" class="relative overflow-hidden rounded-2xl shadow-md bg-white border border-slate-100 transition-transform active:scale-95 text-left">
+                                        <div class="${lvl.color} p-4 text-white">
+                                            <div class="font-bold text-lg">${lvl.title}</div>
+                                            <div class="text-xs opacity-90">${lvl.desc}</div>
+                                        </div>
+                                        <div class="p-3 flex justify-between items-center text-slate-500 text-sm">
+                                            <span>開始測驗 (共 ${lvl.id==='level1'?RAW_WORD_DATA[lvl.id].length:20} 題)</span>
+                                            <i data-lucide="mic" class="w-5 h-5"></i>
+                                        </div>
+                                    </button>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `;
             } else if (state.view === 'game') {
                 const q = state.questions[state.currentIndex];
-                if (!q) {
-                    html = `<div class="p-10 text-center">資料載入錯誤<br><button onclick="goHome()" class="mt-4 bg-gray-200 p-2 rounded">回首頁</button></div>`;
-                } else {
-                    const isListening = state.status === 'listening';
-                    const isSuccess = state.status === 'success';
-                    const isFail = state.status === 'fail';
+                const isListening = state.status === 'listening';
+                let cardClass = "border-slate-100 shadow-lg";
+                if (isListening) cardClass = "border-rose-400 ring-4 ring-rose-50 shadow-xl";
+                if (state.status === 'success') cardClass = "border-green-400 bg-green-50 correct-anim";
+                if (state.status === 'fail') cardClass = "border-red-300 bg-red-50";
 
-                    let cardClass = "border-indigo-100 shadow-lg";
-                    if (isListening) cardClass = "border-rose-400 shadow-xl ring-4 ring-rose-50";
-                    else if (isSuccess) cardClass = "border-green-400 bg-green-50 correct-anim";
-                    else if (isFail) cardClass = "border-red-300 bg-red-50";
-
-                    let textSizeClass = 'text-5xl';
-                    if (q.en.length > 40) textSizeClass = 'text-lg';      
-                    else if (q.en.length > 25) textSizeClass = 'text-xl'; 
-                    else if (q.en.length > 15) textSizeClass = 'text-2xl'; 
-                    else if (q.en.length > 8) textSizeClass = 'text-4xl'; 
-
-                    // 除錯資訊 (開發者用，使用者可見)
-                    const debugInfo = `聽到: "${state.transcript || ''}"`;
-
-                    html = `
-                        <div class="w-full h-full flex flex-col p-6 fade-in relative">
-                            <div class="flex justify-between items-center mb-4">
-                                <button onclick="goHome()" class="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"><i data-lucide="arrow-left"></i></button>
-                                <div class="font-bold text-slate-400">第 ${state.currentIndex + 1} / ${state.questions.length} 題</div>
-                                <div class="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full font-bold text-sm">${state.score} 分</div>
+                html = `
+                    <div class="w-full h-full flex flex-col p-6 fade-in">
+                        <div class="flex justify-between items-center mb-4">
+                            <button onclick="goHome()" class="p-2 rounded-full bg-slate-100"><i data-lucide="arrow-left"></i></button>
+                            <div class="font-bold text-slate-400">第 ${state.currentIndex + 1} / ${state.questions.length} 題</div>
+                            <div class="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full font-bold text-sm">${state.score} 分</div>
+                        </div>
+                        <div class="relative bg-white rounded-3xl p-6 mb-6 border-2 transition-all ${cardClass} flex flex-col items-center justify-center min-h-[320px]">
+                            <div class="text-5xl font-black text-slate-800 mb-2 text-center break-words leading-tight w-full">${q.en}</div>
+                            <div class="text-indigo-400 font-mono text-xl mb-2 font-bold bg-indigo-50 px-3 py-1 rounded-lg">${q.ipa || ''}</div>
+                            <div class="text-lg text-slate-400 font-medium mb-6">${q.zh}</div>
+                            <div class="bg-yellow-50 border border-yellow-100 p-4 rounded-xl text-sm text-yellow-800 w-full text-left mb-4 shadow-sm">
+                                <div class="font-bold text-yellow-600 mb-1 flex items-center gap-1"><i data-lucide="lightbulb" class="w-4 h-4"></i> 發音技巧：</div>
+                                ${q.note || '請聽單字發音後跟讀。'}
                             </div>
-                            <div class="relative bg-white rounded-3xl p-6 mb-6 border-2 transition-all duration-300 ${cardClass} flex flex-col items-center justify-center min-h-[300px]">
-                                <div class="${textSizeClass} font-black text-slate-800 mb-2 text-center tracking-tight break-words leading-tight">${highlightVowels(q.en)}</div>
-                                <div class="text-indigo-400 font-mono text-xl mb-2 font-bold bg-indigo-50 px-3 py-1 rounded-lg">${q.ipa || ''}</div>
-                                <div class="text-lg text-slate-400 font-medium mb-6">${q.zh}</div>
-                                <div class="bg-yellow-50 border border-yellow-100 p-4 rounded-xl text-sm text-yellow-800 w-full text-left leading-relaxed mb-4 shadow-sm">
-                                    <div class="font-bold text-yellow-600 mb-1 flex items-center gap-1"><i data-lucide="lightbulb" class="w-4 h-4"></i> 發音技巧：</div>
-                                    ${q.note || '請參考音標發音'}
-                                </div>
-                                <div class="h-6 text-center w-full">
-                                    ${isListening ? `<div class="mic-wave flex justify-center items-center h-full text-rose-500 font-bold gap-1"><span></span><span></span><span></span> 錄音中</div>` : ''}
-                                    ${!isListening && state.feedbackMsg ? `<div class="text-sm font-bold ${isSuccess ? 'text-green-600' : 'text-red-500'}">${state.feedbackMsg}</div>` : ''}
-                                    ${!isListening && !state.feedbackMsg ? `<div class="text-xs text-slate-300">點擊麥克風練習</div>` : ''}
-                                </div>
-                            </div>
-                            
-                            <!-- 錄音除錯區 -->
-                            <div class="text-center text-xs text-gray-300 mb-2">${debugInfo}</div>
-
-                            <div class="flex items-center justify-center gap-8 mb-6 relative z-10">
-                                <button onclick="speak('${q.en}')" class="w-16 h-16 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center active:bg-slate-200 transition-colors shadow-sm"><i data-lucide="volume-2" class="w-7 h-7"></i></button>
-                                <button onclick="startRecording()" class="w-24 h-24 rounded-full flex items-center justify-center transition-transform active:scale-95 relative group">
-                                    ${isListening ? `<div class="absolute inset-0 bg-rose-500 rounded-full pulse-ring opacity-50"></div>` : ''}
-                                    <div class="relative w-full h-full rounded-full flex items-center justify-center shadow-2xl border-4 border-white ${isListening ? 'bg-gradient-to-br from-rose-500 to-red-600' : 'bg-gradient-to-br from-indigo-500 to-blue-600'}"><i data-lucide="mic" class="w-10 h-10 text-white"></i></div>
-                                </button>
-                            </div>
-                            <div class="text-center">
-                                <button onclick="nextQuestion()" class="text-slate-400 text-sm py-2 px-8 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors inline-flex items-center gap-2">
-                                    跳過 / 下一題 <i data-lucide="skip-forward" class="w-4 h-4"></i>
-                                </button>
+                            <div class="h-6">
+                                ${isListening ? `<div class="mic-wave flex gap-1"><span></span><span></span><span></span></div>` : `<div class="text-sm font-bold ${state.status==='success'?'text-green-600':'text-red-500'}">${state.feedbackMsg}</div>`}
                             </div>
                         </div>
-                    `;
-                }
+                        <div class="flex items-center justify-center gap-8 mb-6">
+                            <button onclick="speak('${q.en}')" class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center transition-colors active:bg-slate-200"><i data-lucide="volume-2"></i></button>
+                            <button onclick="try{recognition.start()}catch(e){}" class="w-24 h-24 rounded-full flex items-center justify-center bg-indigo-600 text-white shadow-2xl transition-transform active:scale-90 ${isListening?'bg-rose-500':''}"><i data-lucide="mic" class="w-10 h-10"></i></button>
+                        </div>
+                        <button onclick="nextQuestion()" class="w-full py-3 bg-slate-100 text-slate-400 rounded-full font-bold hover:bg-slate-200 flex items-center justify-center gap-2">
+                            跳過本題 <i data-lucide="skip-forward" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
             } else if (state.view === 'result') {
                 html = `
-                    <div class="w-full h-full flex flex-col items-center justify-center p-8 fade-in text-center">
-                        <div class="text-8xl mb-6 animate-bounce">🏆</div>
-                        <h2 class="text-3xl font-black text-slate-800 mb-2">測驗完成！</h2>
-                        <div class="bg-white border-2 border-slate-100 w-full rounded-2xl p-8 mb-8 shadow-sm">
-                            <div class="text-slate-400 text-sm mb-2">最終得分</div>
+                    <div class="w-full h-full flex flex-col items-center justify-center p-8 text-center fade-in">
+                        <div class="text-8xl mb-6">🏆</div>
+                        <h2 class="text-3xl font-black mb-2">測驗完成！</h2>
+                        <div class="bg-white border-2 border-slate-100 w-full rounded-2xl p-8 mb-8">
+                            <div class="text-slate-400 text-sm mb-1">最終得分</div>
                             <div class="text-7xl font-black text-indigo-500">${state.score}</div>
                         </div>
-                        <button onclick="startGame('${state.currentLevelId}')" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-all mb-4">再玩一次</button>
-                        <button onclick="goHome()" class="w-full bg-slate-100 text-slate-500 py-4 rounded-xl font-bold active:scale-95 transition-all">回到選單</button>
+                        <button onclick="goHome()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">回到選單</button>
                     </div>
                 `;
             }
-            html += helpModalHtml;
+
             app.innerHTML = html;
             lucide.createIcons();
             
-            // 綁定全域函式 (重要!)
             window.nextQuestion = nextQuestion;
             window.startGame = startGame;
             window.goHome = goHome;
-            window.toggleHelp = toggleHelp;
-            window.startRecording = startRecording;
             window.speak = speak;
         }
 
-        expandDataTo600();
-        initTTS();
-        initSTT();
-        render();
+        window.onload = function() {
+            prepareData();
+            initTTS();
+            initSTT();
+            render();
+        };
 
     </script>
 </body>
