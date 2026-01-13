@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Master Kids - 順暢修正版</title>
+    <title>English Master Kids - 終極穩定版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -46,7 +46,7 @@
 
     <script>
         // ==========================================
-        //  單字資料庫 (修正發音導讀)
+        //  單字資料庫
         // ==========================================
         const RAW_WORD_DATA = {
             // Level 1: KK 音標 (speakText 優化)
@@ -69,7 +69,7 @@
                 { en: "[aʊ]", zh: "ㄠ", ipa: "/aʊ/", note: "啊+嗚。<br><span class='text-indigo-600 font-bold'>音似：奧</span>", speakText: "Ow, Ow, Out" },
                 { en: "[ɔɪ]", zh: "ㄛ一", ipa: "/ɔɪ/", note: "喔+一。<br><span class='text-indigo-600 font-bold'>音似：喔一</span>", speakText: "Oy, Oy, Boy" }
             ],
-            // Level 2: 複合子音 (SpeakText 改為擬聲發音)
+            // Level 2: 複合子音 (speakText 擬聲)
             level2: [
                 { en: "CH", zh: "CH 發音", ipa: "/tʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：去 / 吃</span>", speakText: "Chuh, Cheese" },
                 { en: "SH", zh: "SH 發音", ipa: "/ʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：噓</span>", speakText: "Shuh, Sheep" },
@@ -102,7 +102,7 @@
                 { en: "STR", zh: "STR 混合音", ipa: "/str/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯朱若</span>", speakText: "Str, Street" },
                 { en: "THR", zh: "THR 混合音", ipa: "/θr/", note: "咬舌+捲舌。<br><span class='text-indigo-600 font-bold'>音似：斯若</span>", speakText: "Thr, Three" }
             ],
-            // Level 3 ~ 10 (維持不變，僅示意)
+            // Level 3 ~ 10 維持原樣 (已於前次擴充，這裡僅列部分作為範例)
             level3: [ { en: "Book", zh: "書", ipa: "/bʊk/", note: "oo 發短音 /ʊ/。<br><span class='text-indigo-600 font-bold'>音似：布可</span>" }, { en: "Cat", zh: "貓", ipa: "/kæt/", note: "a 發蝴蝶音 /æ/。<br><span class='text-indigo-600 font-bold'>音似：凱特</span>" } ],
             level4: [ { en: "Family", zh: "家庭", ipa: "/ˈfæməli/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：非麼離</span>" } ],
             level5: [ { en: "Apple", zh: "蘋果", ipa: "/ˈæpl/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：ㄟ-剖</span>" } ],
@@ -167,7 +167,7 @@
             speechSupported: false,
             ttsSupported: false,
             showHelpModal: false,
-            listenTimeout: null
+            isSkipping: false // 新增：防止跳題時錄音回傳干擾
         };
 
         function initTTS() {
@@ -211,24 +211,15 @@
                 recognition.interimResults = false;
 
                 recognition.onstart = () => {
+                    if (state.isSkipping) return; // 如果正在跳題，忽略
                     state.status = 'listening';
                     state.transcript = '';
                     state.feedbackMsg = '請發音...';
                     render();
-                    
-                    clearTimeout(state.listenTimeout);
-                    state.listenTimeout = setTimeout(() => {
-                        if (state.status === 'listening') {
-                            recognition.stop();
-                            state.status = 'idle';
-                            state.feedbackMsg = '沒聽到聲音'; // 柔性提示
-                            render();
-                        }
-                    }, 6000);
                 };
 
                 recognition.onresult = (event) => {
-                    clearTimeout(state.listenTimeout);
+                    if (state.isSkipping) return; // 如果正在跳題，忽略
                     const result = event.results[0][0].transcript;
                     state.transcript = result;
                     evaluate(result);
@@ -236,23 +227,26 @@
                 };
 
                 recognition.onerror = (e) => {
-                    clearTimeout(state.listenTimeout);
+                    if (state.isSkipping) return;
                     console.log('Error', e);
                     if (e.error === 'not-allowed') {
                         state.status = 'fail';
                         state.feedbackMsg = '權限被拒';
                         state.showHelpModal = true;
+                        render();
                     } else {
-                        state.status = 'idle'; // 不報錯，安靜重置
+                        // 安靜處理錯誤，不跳紅字，直接重置
+                        state.status = 'idle';
                         state.feedbackMsg = '請再試一次';
+                        render();
                     }
-                    render();
                 };
 
                 recognition.onend = () => {
-                    clearTimeout(state.listenTimeout);
+                    if (state.isSkipping) return;
                     if (state.status === 'listening') {
                         state.status = 'idle';
+                        state.feedbackMsg = '沒聽到聲音';
                         render();
                     }
                 };
@@ -264,10 +258,13 @@
                 alert("瀏覽器不支援錄音");
                 return;
             }
+            state.isSkipping = false; // 重置跳題旗標
             try { recognition.start(); } catch(e) {}
         }
 
         function evaluate(userSay) {
+            if (state.isSkipping) return;
+
             const currentQ = state.questions[state.currentIndex];
             const normalize = (str) => str.replace(/\s*\(\d+\)/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
             const targetClean = normalize(currentQ.en);
@@ -275,7 +272,7 @@
 
             let isCorrect = userClean === targetClean || userClean.includes(targetClean) || targetClean.includes(userClean);
             
-            // Level 1 & 2 鼓勵模式：有發出聲音就算對
+            // Level 1 & 2 鼓勵模式：有收到聲音就算對
             if (state.currentLevelId === 'level1' || state.currentLevelId === 'level2') {
                 if (userSay.trim().length > 0) isCorrect = true;
             }
@@ -286,11 +283,13 @@
                 state.feedbackMsg = `Correct!`;
                 speak(currentQ.en);
                 render();
-                setTimeout(nextQuestion, 2000);
+                setTimeout(() => {
+                    if (!state.isSkipping) nextQuestion();
+                }, 2000);
             } else {
                 state.status = 'fail';
                 state.feedbackMsg = `聽到: "${userSay}"`;
-                speak(currentQ.en); // 答錯時，自動唸一次正確的給他聽
+                speak(currentQ.en);
                 render();
             }
         }
@@ -309,27 +308,33 @@
             state.status = 'idle';
             state.transcript = '';
             state.feedbackMsg = '';
+            state.isSkipping = false; // 重置
             render();
             setTimeout(() => speak(state.questions[0].en), 600);
         }
 
         function nextQuestion() {
-            // 關鍵修正：先設為 idle，避免 onend 搶快執行
-            state.status = 'idle';
+            // 設定旗標，防止舊的錄音回調干擾
+            state.isSkipping = true; 
             if (recognition) try { recognition.abort(); } catch(e){}
             
-            state.transcript = '';
-            state.feedbackMsg = '';
+            // 強制重置狀態
+            setTimeout(() => {
+                state.isSkipping = false;
+                state.status = 'idle';
+                state.transcript = '';
+                state.feedbackMsg = '';
 
-            if (state.currentIndex < state.questions.length - 1) {
-                state.currentIndex++;
-                render();
-                speak(state.questions[state.currentIndex].en);
-            } else {
-                state.view = 'result';
-                render();
-                speak("Mission Complete!");
-            }
+                if (state.currentIndex < state.questions.length - 1) {
+                    state.currentIndex++;
+                    render();
+                    speak(state.questions[state.currentIndex].en);
+                } else {
+                    state.view = 'result';
+                    render();
+                    speak("Mission Complete!");
+                }
+            }, 100); // 微小延遲確保 abort 完成
         }
 
         function goHome() {
@@ -380,7 +385,7 @@
                     <div class="w-full p-6 pb-20 fade-in">
                         <header class="mb-6 text-center">
                             <h1 class="text-3xl font-black text-indigo-600 mb-1">English Master</h1>
-                            <p class="text-sm text-slate-500">發音教練・AI 比對</p>
+                            <p class="text-sm text-slate-500">穩定修正版</p>
                             ${!state.speechSupported ? '<div class="mt-2 bg-red-100 text-red-600 px-3 py-1 rounded text-xs inline-block">⚠️ 瀏覽器不支援錄音</div>' : ''}
                         </header>
                         <div class="flex justify-center mb-6">
