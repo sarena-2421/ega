@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Master Kids - 諧音輔助版</title>
+    <title>English Master Kids - 智慧比對版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -52,7 +52,7 @@
         //  單字資料庫 (Data Center)
         // ==========================================
         const RAW_WORD_DATA = {
-            // Level 1: KK 音標 - 母音篇 (加上注音/諧音)
+            // Level 1: KK 音標 - 母音篇
             level1: [
                 { en: "[i]", zh: "ㄧ (長音)", ipa: "/i/", note: "嘴角向兩旁拉開微笑。<br><span class='text-indigo-600 font-bold'>音似：一 (長音)</span>" },
                 { en: "[ɪ]", zh: "ㄧ (短音)", ipa: "/ɪ/", note: "嘴角放鬆，短促發音。<br><span class='text-indigo-600 font-bold'>音似：一 (短促)</span>" },
@@ -72,7 +72,7 @@
                 { en: "[aʊ]", zh: "ㄠ", ipa: "/aʊ/", note: "啊+嗚。<br><span class='text-indigo-600 font-bold'>音似：奧</span>" },
                 { en: "[ɔɪ]", zh: "ㄛ一", ipa: "/ɔɪ/", note: "喔+一。<br><span class='text-indigo-600 font-bold'>音似：喔一</span>" }
             ],
-            // Level 2: 複合子音 (加上諧音)
+            // Level 2: 複合子音
             level2: [
                 { en: "CH", zh: "CH 發音", ipa: "/tʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：去 / 吃</span>" },
                 { en: "SH", zh: "SH 發音", ipa: "/ʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：噓</span>" },
@@ -206,17 +206,14 @@
 
         // --- 自動擴充資料庫函式 ---
         function expandDataTo600() {
-            // 深拷貝原始資料
             WORD_DATA = JSON.parse(JSON.stringify(RAW_WORD_DATA));
 
             for (const level in WORD_DATA) {
-                // 第一關保持原樣，不擴充
                 if (level === 'level1') continue;
 
                 const originalWords = WORD_DATA[level];
                 const currentCount = originalWords.length;
                 
-                // 如果需要擴充
                 if (currentCount < TARGET_WORD_COUNT) {
                     const needed = TARGET_WORD_COUNT - currentCount;
                     
@@ -232,10 +229,9 @@
                     }
                 }
                 
-                // 洗牌
                 WORD_DATA[level].sort(() => 0.5 - Math.random());
             }
-            console.log("資料庫擴充完成：除 Level 1 外，每關皆為 600 字");
+            console.log("資料庫擴充完成");
         }
 
         const LEVELS = [
@@ -261,18 +257,16 @@
             questions: [],
             currentIndex: 0,
             score: 0,
-            status: 'idle', // idle, listening, evaluating, success, fail
+            status: 'idle',
             transcript: '', 
             feedbackMsg: '',
-            
-            // 系統支援度
             isSecure: window.location.protocol === 'https:' || window.location.hostname === 'localhost',
             speechSupported: false,
             ttsSupported: false,
             showHelpModal: false
         };
 
-        // --- TTS (發音) ---
+        // --- TTS ---
         function initTTS() {
             if ('speechSynthesis' in window) {
                 state.ttsSupported = true;
@@ -284,6 +278,7 @@
             if (!state.ttsSupported) return;
             window.speechSynthesis.cancel();
             
+            // 移除編號再發音
             let textToSpeak = text.replace(/\s*\(\d+\)/, "");
             
             const u = new SpeechSynthesisUtterance(textToSpeak);
@@ -298,7 +293,7 @@
             window.speechSynthesis.speak(u);
         }
 
-        // --- STT (語音辨識) ---
+        // --- STT ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
 
@@ -321,25 +316,30 @@
                     const result = event.results[0][0].transcript;
                     state.transcript = result;
                     evaluate(result);
+                    recognition.stop(); // 收到結果後立刻停止，防止重複
                 };
 
                 recognition.onerror = (e) => {
                     console.log('Error', e);
-                    state.status = 'fail';
                     if (e.error === 'not-allowed') {
+                        state.status = 'fail';
                         state.feedbackMsg = '權限被拒';
                         state.showHelpModal = true;
+                        render();
                     } else if (e.error === 'no-speech') {
-                        state.feedbackMsg = '沒聽到聲音';
+                        // 這裡不設為 fail，交給 onend 處理
                     } else {
+                        state.status = 'fail';
                         state.feedbackMsg = '辨識錯誤';
+                        render();
                     }
-                    render();
                 };
 
                 recognition.onend = () => {
+                    // 如果結束時還在 listening 狀態，代表沒收到結果 (no-speech)
                     if (state.status === 'listening') {
-                        state.status = 'idle';
+                        state.status = 'fail';
+                        state.feedbackMsg = '沒聽到聲音，請再試一次';
                         render();
                     }
                 };
@@ -358,42 +358,41 @@
             }
         }
 
-        // --- 核心：發音比對 ---
+        // --- 核心：智慧比對 ---
         function evaluate(userSay) {
             const currentQ = state.questions[state.currentIndex];
-            const target = currentQ.en.replace(/\s*\(\d+\)/, "").toLowerCase().trim();
-            // 句子比對：移除標點符號
-            const cleanUserSay = userSay.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
-            const cleanTarget = target.replace(/[^a-z0-9 ]/g, "");
-
-            let isCorrect = cleanUserSay === cleanTarget || cleanUserSay.includes(cleanTarget);
             
-            // Level 1 音標比對寬容度
-            if (state.currentLevelId === 'level1') {
-                if (cleanUserSay.length > 0) isCorrect = true;
-            }
-            else if (state.currentLevelId === 'level2') {
-                if (cleanUserSay.includes(cleanTarget)) isCorrect = true;
+            // 1. 標準化處理 (移除編號、轉小寫、移除非英數符號)
+            const normalize = (str) => str.replace(/\s*\(\d+\)/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            
+            const targetClean = normalize(currentQ.en);
+            const userClean = normalize(userSay);
+
+            // 2. 基礎比對邏輯
+            let isCorrect = userClean === targetClean || userClean.includes(targetClean) || targetClean.includes(userClean);
+            
+            // 3. Level 1 & 2 鼓勵模式：只要有說話 (長度>0) 就算對
+            if (state.currentLevelId === 'level1' || state.currentLevelId === 'level2') {
+                if (userSay.trim().length > 0) isCorrect = true;
             }
 
             if (isCorrect) {
                 state.status = 'success';
                 state.score += 5; 
                 state.feedbackMsg = `Correct!`;
-                speak("Good! " + target);
+                speak("Good! " + currentQ.en.replace(/\s*\(\d+\)/, ""));
                 render();
                 setTimeout(nextQuestion, 2000);
             } else {
                 state.status = 'fail';
                 state.feedbackMsg = `聽到: "${userSay}"`;
-                speak("Try again. " + target);
+                speak("Try again. " + currentQ.en.replace(/\s*\(\d+\)/, ""));
                 render();
             }
         }
 
         function startGame(levelId) {
             const allWords = WORD_DATA[levelId];
-            
             if (levelId === 'level1') {
                 state.questions = [...allWords];
             } else {
@@ -493,7 +492,7 @@
                     <div class="w-full p-6 pb-20 fade-in">
                         <header class="mb-6 text-center">
                             <h1 class="text-3xl font-black text-indigo-600 mb-1">English Master</h1>
-                            <p class="text-sm text-slate-500">KK 音標・發音教練</p>
+                            <p class="text-sm text-slate-500">智慧比對・發音教練</p>
                             ${!state.speechSupported ? '<div class="mt-2 bg-red-100 text-red-600 px-3 py-1 rounded text-xs inline-block">⚠️ 瀏覽器不支援錄音</div>' : ''}
                         </header>
                         
@@ -538,12 +537,12 @@
                     statusIcon = `<div class="absolute -top-6 right-0 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1"><i data-lucide="x"></i> Try Again</div>`;
                 }
 
-                // 動態調整字體大小：針對句子長度優化
-                let textSizeClass = 'text-5xl'; // 預設單字大小
-                if (q.en.length > 40) textSizeClass = 'text-lg';      // 超長句
-                else if (q.en.length > 25) textSizeClass = 'text-xl'; // 長句
-                else if (q.en.length > 15) textSizeClass = 'text-2xl'; // 中句
-                else if (q.en.length > 8) textSizeClass = 'text-4xl';  // 長單字/短句
+                // 字體大小自動調整 (針對 Level 7 優化)
+                let textSizeClass = 'text-5xl';
+                if (q.en.length > 40) textSizeClass = 'text-lg';      
+                else if (q.en.length > 25) textSizeClass = 'text-xl'; 
+                else if (q.en.length > 15) textSizeClass = 'text-2xl'; 
+                else if (q.en.length > 8) textSizeClass = 'text-4xl'; 
 
                 html = `
                     <div class="w-full h-full flex flex-col p-6 fade-in relative">
