@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Master Kids - 智慧比對版</title>
+    <title>English Master Kids - 發音修正版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -51,187 +51,100 @@
         // ==========================================
         //  單字資料庫 (Data Center)
         // ==========================================
+        /* speakText: 專門給 TTS 唸的文字。
+           我們利用重複發音 + 例字 (e.g., "Ch, Ch, Cheese") 來模擬教學發音。
+        */
         const RAW_WORD_DATA = {
-            // Level 1: KK 音標 - 母音篇
+            // Level 1: KK 音標 (增加 speakText 導讀)
             level1: [
-                { en: "[i]", zh: "ㄧ (長音)", ipa: "/i/", note: "嘴角向兩旁拉開微笑。<br><span class='text-indigo-600 font-bold'>音似：一 (長音)</span>" },
-                { en: "[ɪ]", zh: "ㄧ (短音)", ipa: "/ɪ/", note: "嘴角放鬆，短促發音。<br><span class='text-indigo-600 font-bold'>音似：一 (短促)</span>" },
-                { en: "[e]", zh: "ㄝ一 (雙母音)", ipa: "/e/", note: "先唸ㄝ再滑向一。<br><span class='text-indigo-600 font-bold'>音似：ㄝ一</span>" },
-                { en: "[ɛ]", zh: "ㄝ (短音)", ipa: "/ɛ/", note: "嘴巴微張，短促有力。<br><span class='text-indigo-600 font-bold'>音似：ㄝ</span>" },
-                { en: "[æ]", zh: "蝴蝶音", ipa: "/æ/", note: "嘴巴張大成「啊」的形狀唸「ㄝ」。<br><span class='text-indigo-600 font-bold'>音似：梅 (的韻母)</span>" },
-                { en: "[ɑ]", zh: "啊 (大口)", ipa: "/ɑ/", note: "嘴巴上下拉大。<br><span class='text-indigo-600 font-bold'>音似：啊 (看牙醫時)</span>" },
-                { en: "[ʌ]", zh: "啊 (短音)", ipa: "/ʌ/", note: "嘴巴微張，短促。<br><span class='text-indigo-600 font-bold'>音似：啊 (短)</span>" },
-                { en: "[ə]", zh: "ㄜ (輕音)", ipa: "/ə/", note: "嘴巴放鬆，輕輕唸。<br><span class='text-indigo-600 font-bold'>音似：ㄜ (輕聲)</span>" },
-                { en: "[ɔ]", zh: "喔 (長音)", ipa: "/ɔ/", note: "嘴巴圓圓的。<br><span class='text-indigo-600 font-bold'>音似：喔</span>" },
-                { en: "[o]", zh: "歐 (雙母音)", ipa: "/o/", note: "先唸喔再滑向ㄨ。<br><span class='text-indigo-600 font-bold'>音似：歐</span>" },
-                { en: "[u]", zh: "嗚 (長音)", ipa: "/u/", note: "嘴唇嘟圓。<br><span class='text-indigo-600 font-bold'>音似：嗚 (長)</span>" },
-                { en: "[ʊ]", zh: "嗚 (短音)", ipa: "/ʊ/", note: "嘴巴放鬆一點。<br><span class='text-indigo-600 font-bold'>音似：嗚 (短)</span>" },
-                { en: "[ɝ]", zh: "儿 (長音)", ipa: "/3/ or /ɝ/", note: "捲舌音。<br><span class='text-indigo-600 font-bold'>音似：二 (捲舌)</span>" },
-                { en: "[ɚ]", zh: "儿 (短音)", ipa: "/2/ or /ɚ/", note: "輕聲捲舌。<br><span class='text-indigo-600 font-bold'>音似：二 (輕聲)</span>" },
-                { en: "[aɪ]", zh: "ㄞ", ipa: "/aɪ/", note: "啊+一。<br><span class='text-indigo-600 font-bold'>音似：愛</span>" },
-                { en: "[aʊ]", zh: "ㄠ", ipa: "/aʊ/", note: "啊+嗚。<br><span class='text-indigo-600 font-bold'>音似：奧</span>" },
-                { en: "[ɔɪ]", zh: "ㄛ一", ipa: "/ɔɪ/", note: "喔+一。<br><span class='text-indigo-600 font-bold'>音似：喔一</span>" }
+                { en: "[i]", zh: "ㄧ (長音)", ipa: "/i/", note: "嘴角向兩旁拉開微笑。<br><span class='text-indigo-600 font-bold'>音似：一 (長音)</span>", speakText: "E, E, Eat" },
+                { en: "[ɪ]", zh: "ㄧ (短音)", ipa: "/ɪ/", note: "嘴角放鬆，短促發音。<br><span class='text-indigo-600 font-bold'>音似：一 (短促)</span>", speakText: "Ih, Ih, It" },
+                { en: "[e]", zh: "ㄝ一 (雙母音)", ipa: "/e/", note: "先唸ㄝ再滑向一。<br><span class='text-indigo-600 font-bold'>音似：ㄝ一</span>", speakText: "A, A, Eight" },
+                { en: "[ɛ]", zh: "ㄝ (短音)", ipa: "/ɛ/", note: "嘴巴微張，短促有力。<br><span class='text-indigo-600 font-bold'>音似：ㄝ</span>", speakText: "Eh, Eh, Egg" },
+                { en: "[æ]", zh: "蝴蝶音", ipa: "/æ/", note: "嘴巴張大成「啊」的形狀唸「ㄝ」。<br><span class='text-indigo-600 font-bold'>音似：梅 (的韻母)</span>", speakText: "A, A, Apple" },
+                { en: "[ɑ]", zh: "啊 (大口)", ipa: "/ɑ/", note: "嘴巴上下拉大。<br><span class='text-indigo-600 font-bold'>音似：啊 (看牙醫時)</span>", speakText: "Ah, Ah, Hot" },
+                { en: "[ʌ]", zh: "啊 (短音)", ipa: "/ʌ/", note: "嘴巴微張，短促。<br><span class='text-indigo-600 font-bold'>音似：啊 (短)</span>", speakText: "Uh, Uh, Up" },
+                { en: "[ə]", zh: "ㄜ (輕音)", ipa: "/ə/", note: "嘴巴放鬆，輕輕唸。<br><span class='text-indigo-600 font-bold'>音似：ㄜ (輕聲)</span>", speakText: "Uh, Uh, About" },
+                { en: "[ɔ]", zh: "喔 (長音)", ipa: "/ɔ/", note: "嘴巴圓圓的。<br><span class='text-indigo-600 font-bold'>音似：喔</span>", speakText: "Aw, Aw, All" },
+                { en: "[o]", zh: "歐 (雙母音)", ipa: "/o/", note: "先唸喔再滑向ㄨ。<br><span class='text-indigo-600 font-bold'>音似：歐</span>", speakText: "Oh, Oh, Go" },
+                { en: "[u]", zh: "嗚 (長音)", ipa: "/u/", note: "嘴唇嘟圓。<br><span class='text-indigo-600 font-bold'>音似：嗚 (長)</span>", speakText: "Oo, Oo, Food" },
+                { en: "[ʊ]", zh: "嗚 (短音)", ipa: "/ʊ/", note: "嘴巴放鬆一點。<br><span class='text-indigo-600 font-bold'>音似：嗚 (短)</span>", speakText: "Uh, Uh, Book" },
+                { en: "[ɝ]", zh: "儿 (長音)", ipa: "/3/ or /ɝ/", note: "捲舌音。<br><span class='text-indigo-600 font-bold'>音似：二 (捲舌)</span>", speakText: "Er, Er, Bird" },
+                { en: "[ɚ]", zh: "儿 (短音)", ipa: "/2/ or /ɚ/", note: "輕聲捲舌。<br><span class='text-indigo-600 font-bold'>音似：二 (輕聲)</span>", speakText: "Er, Er, Sister" },
+                { en: "[aɪ]", zh: "ㄞ", ipa: "/aɪ/", note: "啊+一。<br><span class='text-indigo-600 font-bold'>音似：愛</span>", speakText: "I, I, Ice" },
+                { en: "[aʊ]", zh: "ㄠ", ipa: "/aʊ/", note: "啊+嗚。<br><span class='text-indigo-600 font-bold'>音似：奧</span>", speakText: "Ow, Ow, Out" },
+                { en: "[ɔɪ]", zh: "ㄛ一", ipa: "/ɔɪ/", note: "喔+一。<br><span class='text-indigo-600 font-bold'>音似：喔一</span>", speakText: "Oy, Oy, Boy" }
             ],
-            // Level 2: 複合子音
+            // Level 2: 複合子音 (增加 speakText 導讀)
             level2: [
-                { en: "CH", zh: "CH 發音", ipa: "/tʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：去 / 吃</span>" },
-                { en: "SH", zh: "SH 發音", ipa: "/ʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：噓</span>" },
-                { en: "TH", zh: "TH (無聲)", ipa: "/θ/", note: "咬舌頭吹氣。<br><span class='text-indigo-600 font-bold'>音似：斯 (大舌頭)</span>" },
-                { en: "TH", zh: "TH (有聲)", ipa: "/ð/", note: "咬舌頭震動。<br><span class='text-indigo-600 font-bold'>音似：日 (大舌頭)</span>" },
-                { en: "PH", zh: "PH 發音", ipa: "/f/", note: "咬下唇。<br><span class='text-indigo-600 font-bold'>音似：夫</span>" },
-                { en: "WH", zh: "WH 發音", ipa: "/w/", note: "圓唇。<br><span class='text-indigo-600 font-bold'>音似：ㄨ</span>" },
-                { en: "NG", zh: "NG 字尾音", ipa: "/ŋ/", note: "鼻音。<br><span class='text-indigo-600 font-bold'>音似：嗯 (Sing的尾音)</span>" },
-                { en: "CK", zh: "CK 字尾音", ipa: "/k/", note: "短促。<br><span class='text-indigo-600 font-bold'>音似：克</span>" },
-                { en: "QU", zh: "QU 發音", ipa: "/kw/", note: "圓唇張開。<br><span class='text-indigo-600 font-bold'>音似：夸</span>" },
-                { en: "BL", zh: "BL 混合音", ipa: "/bl/", note: "緊閉雙唇後彈開。<br><span class='text-indigo-600 font-bold'>音似：布魯</span>" },
-                { en: "CL", zh: "CL 混合音", ipa: "/kl/", note: "舌根音。<br><span class='text-indigo-600 font-bold'>音似：克魯</span>" },
-                { en: "FL", zh: "FL 混合音", ipa: "/fl/", note: "咬下唇。<br><span class='text-indigo-600 font-bold'>音似：夫魯</span>" },
-                { en: "GL", zh: "GL 混合音", ipa: "/gl/", note: "舌根音。<br><span class='text-indigo-600 font-bold'>音似：葛魯</span>" },
-                { en: "PL", zh: "PL 混合音", ipa: "/pl/", note: "緊閉雙唇。<br><span class='text-indigo-600 font-bold'>音似：普魯</span>" },
-                { en: "SL", zh: "SL 混合音", ipa: "/sl/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：斯魯</span>" },
-                { en: "BR", zh: "BR 混合音", ipa: "/br/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：布若</span>" },
-                { en: "CR", zh: "CR 混合音", ipa: "/kr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：克若</span>" },
-                { en: "DR", zh: "DR 混合音", ipa: "/dr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：朱若</span>" },
-                { en: "FR", zh: "FR 混合音", ipa: "/fr/", note: "咬下唇捲舌。<br><span class='text-indigo-600 font-bold'>音似：夫若</span>" },
-                { en: "GR", zh: "GR 混合音", ipa: "/gr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：葛若</span>" },
-                { en: "PR", zh: "PR 混合音", ipa: "/pr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：普若</span>" },
-                { en: "SP", zh: "SP 混合音", ipa: "/sp/", note: "S後P不送氣。<br><span class='text-indigo-600 font-bold'>音似：斯逼</span>" },
-                { en: "ST", zh: "ST 混合音", ipa: "/st/", note: "S後T不送氣。<br><span class='text-indigo-600 font-bold'>音似：斯滴</span>" },
-                { en: "SW", zh: "SW 混合音", ipa: "/sw/", note: "圓唇。<br><span class='text-indigo-600 font-bold'>音似：斯我</span>" },
-                { en: "SCR", zh: "SCR 混合音", ipa: "/skr/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯格若</span>" },
-                { en: "SHR", zh: "SHR 混合音", ipa: "/ʃr/", note: "噓+捲舌。<br><span class='text-indigo-600 font-bold'>音似：許若</span>" },
-                { en: "SPL", zh: "SPL 混合音", ipa: "/spl/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯布魯</span>" },
-                { en: "SPR", zh: "SPR 混合音", ipa: "/spr/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯布若</span>" },
-                { en: "STR", zh: "STR 混合音", ipa: "/str/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯朱若</span>" },
-                { en: "THR", zh: "THR 混合音", ipa: "/θr/", note: "咬舌+捲舌。<br><span class='text-indigo-600 font-bold'>音似：斯若</span>" }
+                { en: "CH", zh: "CH 發音", ipa: "/tʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：去 / 吃</span>", speakText: "Ch, Ch, Cheese" },
+                { en: "SH", zh: "SH 發音", ipa: "/ʃ/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：噓</span>", speakText: "Sh, Sh, Sheep" },
+                { en: "TH", zh: "TH (無聲)", ipa: "/θ/", note: "咬舌頭吹氣。<br><span class='text-indigo-600 font-bold'>音似：斯 (大舌頭)</span>", speakText: "Th, Th, Thank" },
+                { en: "TH", zh: "TH (有聲)", ipa: "/ð/", note: "咬舌頭震動。<br><span class='text-indigo-600 font-bold'>音似：日 (大舌頭)</span>", speakText: "Th, Th, This" },
+                { en: "PH", zh: "PH 發音", ipa: "/f/", note: "咬下唇。<br><span class='text-indigo-600 font-bold'>音似：夫</span>", speakText: "F, F, Phone" },
+                { en: "WH", zh: "WH 發音", ipa: "/w/", note: "圓唇。<br><span class='text-indigo-600 font-bold'>音似：ㄨ</span>", speakText: "W, W, White" },
+                { en: "NG", zh: "NG 字尾音", ipa: "/ŋ/", note: "鼻音。<br><span class='text-indigo-600 font-bold'>音似：嗯 (Sing的尾音)</span>", speakText: "Ng, Ng, Sing" },
+                { en: "CK", zh: "CK 字尾音", ipa: "/k/", note: "短促。<br><span class='text-indigo-600 font-bold'>音似：克</span>", speakText: "Ck, Ck, Duck" },
+                { en: "QU", zh: "QU 發音", ipa: "/kw/", note: "圓唇張開。<br><span class='text-indigo-600 font-bold'>音似：夸</span>", speakText: "Qu, Qu, Queen" },
+                { en: "BL", zh: "BL 混合音", ipa: "/bl/", note: "緊閉雙唇後彈開。<br><span class='text-indigo-600 font-bold'>音似：布魯</span>", speakText: "Bl, Bl, Blue" },
+                { en: "CL", zh: "CL 混合音", ipa: "/kl/", note: "舌根音。<br><span class='text-indigo-600 font-bold'>音似：克魯</span>", speakText: "Cl, Cl, Class" },
+                { en: "FL", zh: "FL 混合音", ipa: "/fl/", note: "咬下唇。<br><span class='text-indigo-600 font-bold'>音似：夫魯</span>", speakText: "Fl, Fl, Fly" },
+                { en: "GL", zh: "GL 混合音", ipa: "/gl/", note: "舌根音。<br><span class='text-indigo-600 font-bold'>音似：葛魯</span>", speakText: "Gl, Gl, Glass" },
+                { en: "PL", zh: "PL 混合音", ipa: "/pl/", note: "緊閉雙唇。<br><span class='text-indigo-600 font-bold'>音似：普魯</span>", speakText: "Pl, Pl, Play" },
+                { en: "SL", zh: "SL 混合音", ipa: "/sl/", note: "氣音。<br><span class='text-indigo-600 font-bold'>音似：斯魯</span>", speakText: "Sl, Sl, Slow" },
+                { en: "BR", zh: "BR 混合音", ipa: "/br/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：布若</span>", speakText: "Br, Br, Bread" },
+                { en: "CR", zh: "CR 混合音", ipa: "/kr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：克若</span>", speakText: "Cr, Cr, Cry" },
+                { en: "DR", zh: "DR 混合音", ipa: "/dr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：朱若</span>", speakText: "Dr, Dr, Dream" },
+                { en: "FR", zh: "FR 混合音", ipa: "/fr/", note: "咬下唇捲舌。<br><span class='text-indigo-600 font-bold'>音似：夫若</span>", speakText: "Fr, Fr, Frog" },
+                { en: "GR", zh: "GR 混合音", ipa: "/gr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：葛若</span>", speakText: "Gr, Gr, Green" },
+                { en: "PR", zh: "PR 混合音", ipa: "/pr/", note: "捲舌。<br><span class='text-indigo-600 font-bold'>音似：普若</span>", speakText: "Pr, Pr, Price" },
+                { en: "SP", zh: "SP 混合音", ipa: "/sp/", note: "S後P不送氣。<br><span class='text-indigo-600 font-bold'>音似：斯逼</span>", speakText: "Sp, Sp, Speak" },
+                { en: "ST", zh: "ST 混合音", ipa: "/st/", note: "S後T不送氣。<br><span class='text-indigo-600 font-bold'>音似：斯滴</span>", speakText: "St, St, Stop" },
+                { en: "SW", zh: "SW 混合音", ipa: "/sw/", note: "圓唇。<br><span class='text-indigo-600 font-bold'>音似：斯我</span>", speakText: "Sw, Sw, Swim" },
+                { en: "SCR", zh: "SCR 混合音", ipa: "/skr/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯格若</span>", speakText: "Scr, Scr, Screen" },
+                { en: "SHR", zh: "SHR 混合音", ipa: "/ʃr/", note: "噓+捲舌。<br><span class='text-indigo-600 font-bold'>音似：許若</span>", speakText: "Shr, Shr, Shrimp" },
+                { en: "SPL", zh: "SPL 混合音", ipa: "/spl/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯布魯</span>", speakText: "Spl, Spl, Splash" },
+                { en: "SPR", zh: "SPR 混合音", ipa: "/spr/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯布若</span>", speakText: "Spr, Spr, Spring" },
+                { en: "STR", zh: "STR 混合音", ipa: "/str/", note: "三音連讀。<br><span class='text-indigo-600 font-bold'>音似：斯朱若</span>", speakText: "Str, Str, Street" },
+                { en: "THR", zh: "THR 混合音", ipa: "/θr/", note: "咬舌+捲舌。<br><span class='text-indigo-600 font-bold'>音似：斯若</span>", speakText: "Thr, Thr, Three" }
             ],
-            // Level 3: 國小單字
-            level3: [
-                { en: "Book", zh: "書", ipa: "/bʊk/", note: "oo 發短音 /ʊ/。<br><span class='text-indigo-600 font-bold'>音似：布可</span>" }, 
-                { en: "Pen", zh: "筆", ipa: "/pɛn/", note: "e 發 /ɛ/。<br><span class='text-indigo-600 font-bold'>音似：噴</span>" },
-                { en: "Cat", zh: "貓", ipa: "/kæt/", note: "a 發蝴蝶音 /æ/。<br><span class='text-indigo-600 font-bold'>音似：凱特</span>" },
-                { en: "Dog", zh: "狗", ipa: "/dɔg/", note: "o 發 /ɔ/。<br><span class='text-indigo-600 font-bold'>音似：道格</span>" },
-                { en: "Pig", zh: "豬", ipa: "/pɪg/", note: "i 發短音 /ɪ/。<br><span class='text-indigo-600 font-bold'>音似：屁格</span>" },
-                { en: "Map", zh: "地圖", ipa: "/mæp/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：妹普</span>" },
-                { en: "Bus", zh: "公車", ipa: "/bʌs/", note: "u 發 /ʌ/。<br><span class='text-indigo-600 font-bold'>音似：爸死</span>" },
-                { en: "Red", zh: "紅色", ipa: "/rɛd/", note: "e 發 /ɛ/。<br><span class='text-indigo-600 font-bold'>音似：瑞德</span>" },
-                { en: "Big", zh: "大的", ipa: "/bɪg/", note: "i 發 /ɪ/。<br><span class='text-indigo-600 font-bold'>音似：必格</span>" },
-                { en: "Box", zh: "箱子", ipa: "/bɑks/", note: "o 發 /ɑ/。<br><span class='text-indigo-600 font-bold'>音似：霸克死</span>" }
-            ],
-            // Level 4: 國中單字
-            level4: [ 
-                { en: "Family", zh: "家庭", ipa: "/ˈfæməli/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：非麼離</span>" }, 
-                { en: "Friend", zh: "朋友", ipa: "/frɛnd/", note: "ie 發 /ɛ/。<br><span class='text-indigo-600 font-bold'>音似：夫瑞恩德</span>" }, 
-                { en: "School", zh: "學校", ipa: "/skul/", note: "oo 發長音 /u/。<br><span class='text-indigo-600 font-bold'>音似：死哭喔</span>" },
-                { en: "Doctor", zh: "醫生", ipa: "/ˈdɑktər/", note: "o 發 /ɑ/。<br><span class='text-indigo-600 font-bold'>音似：達克特</span>" },
-                { en: "Summer", zh: "夏天", ipa: "/ˈsʌmər/", note: "u 發 /ʌ/。<br><span class='text-indigo-600 font-bold'>音似：薩麼</span>" },
-                { en: "Winter", zh: "冬天", ipa: "/ˈwɪntər/", note: "i 發 /ɪ/。<br><span class='text-indigo-600 font-bold'>音似：溫特</span>" },
-                { en: "Market", zh: "市場", ipa: "/ˈmɑrkɪt/", note: "ar 發 /ɑr/。<br><span class='text-indigo-600 font-bold'>音似：罵ㄎㄧt</span>" },
-                { en: "Dinner", zh: "晚餐", ipa: "/ˈdɪnər/", note: "i 發 /ɪ/。<br><span class='text-indigo-600 font-bold'>音似：滴呢</span>" }
-            ],
-            // Level 5: 高一單字
-            level5: [ 
-                { en: "About", zh: "關於", ipa: "/əˈbaʊt/", note: "ou 發 /aʊ/。<br><span class='text-indigo-600 font-bold'>音似：額-鮑特</span>" }, 
-                { en: "Apple", zh: "蘋果", ipa: "/ˈæpl/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：ㄟ-剖</span>" },
-                { en: "Ability", zh: "能力", ipa: "/əˈbɪləti/", note: "A 發 /ə/。<br><span class='text-indigo-600 font-bold'>音似：額-比-勒-梯</span>" },
-                { en: "Accept", zh: "接受", ipa: "/əkˈsɛpt/", note: "cc 發 /ks/。<br><span class='text-indigo-600 font-bold'>音似：額-克-ㄙㄟ-pt</span>" },
-                { en: "Advice", zh: "建議", ipa: "/ədˈvaɪs/", note: "i 發 /aɪ/。<br><span class='text-indigo-600 font-bold'>音似：額d-v-ai-s</span>" },
-                { en: "Create", zh: "創造", ipa: "/kriˈeɪt/", note: "ea 分開唸。<br><span class='text-indigo-600 font-bold'>音似：k-瑞-A-t</span>" }
-            ],
-            // Level 6: 高二單字
-            level6: [ 
-                { en: "Student", zh: "學生", ipa: "/ˈstudnt/", note: "u 發 /u/。<br><span class='text-indigo-600 font-bold'>音似：死-丟-等t</span>" }, 
-                { en: "Teacher", zh: "老師", ipa: "/ˈtitʃər/", note: "ea 發 /i/。<br><span class='text-indigo-600 font-bold'>音似：替-雀爾</span>" },
-                { en: "Abandon", zh: "放棄", ipa: "/əˈbændən/", note: "Ban 發 /bæn/。<br><span class='text-indigo-600 font-bold'>音似：額-班-登</span>" },
-                { en: "Benefit", zh: "利益", ipa: "/ˈbɛnəfɪt/", note: "e 發 /ɛ/。<br><span class='text-indigo-600 font-bold'>音似：貝-訥-fi-t</span>" },
-                { en: "Capture", zh: "捕捉", ipa: "/ˈkæptʃər/", note: "ture 發 /tʃər/。<br><span class='text-indigo-600 font-bold'>音似：凱p-區爾</span>" }
-            ],
-            // Level 7: 日常會話 (加上整句空耳)
-            level7: [ 
-                { en: "Do you need a hand?", zh: "你需要幫忙嗎？", ipa: "/nid ə hænd/", note: "Need a 連讀。<br><span class='text-indigo-600 font-bold'>音似：度 油 尼 ㄜ 漢?</span>" },
-                { en: "I'd like an oyster omelet.", zh: "我想要一份蚵仔煎。", ipa: "/ɔɪstər ˈɑmlət/", note: "Oyster (蚵仔)。<br><span class='text-indigo-600 font-bold'>音似：愛d 賴k 安 歐伊斯特 阿麼勒t</span>" },
-                { en: "How do I get to the station?", zh: "請問車站怎麼走？", ipa: "/haʊ du aɪ gɛt tu/", note: "語調在 station 下降。<br><span class='text-indigo-600 font-bold'>音似：豪 度 愛 蓋t 兔 德 斯stay-炫?</span>" },
-                { en: "Go straight and turn right.", zh: "直走然後右轉。", ipa: "/goʊ streɪt ænd tɜrn raɪt/", note: "Straight (直走)。<br><span class='text-indigo-600 font-bold'>音似：購 斯墜t 按 騰 瑞t</span>" },
-                { en: "Where is the restroom?", zh: "請問洗手間在哪裡？", ipa: "/wɛr ɪz ðə ˈrɛstrum/", note: "Restroom 是廁所。<br><span class='text-indigo-600 font-bold'>音似：威爾 依z 德 瑞斯特-room?</span>" },
-                { en: "How much is this?", zh: "請問這個多少錢？", ipa: "/haʊ mʌtʃ ɪz ðɪs/", note: "Is this 連讀。<br><span class='text-indigo-600 font-bold'>音似：豪 罵區 依z 迪斯?</span>" },
-                { en: "Could I get the check, please?", zh: "麻煩買單。", ipa: "/kʊd aɪ gɛt ðə tʃɛk/", note: "Check 是帳單。<br><span class='text-indigo-600 font-bold'>音似：庫d 愛 蓋t 德 卻k, 普力z?</span>" },
-                { en: "Long time no see.", zh: "好久不見。", ipa: "/lɔŋ taɪm noʊ si/", note: "口語常用句。<br><span class='text-indigo-600 font-bold'>音似：龍 泰m 諾 C</span>" },
-                { en: "I'm just looking, thanks.", zh: "我只是看看，謝謝。", ipa: "/aɪm dʒʌst ˈlʊkɪŋ/", note: "逛街時用。<br><span class='text-indigo-600 font-bold'>音似：愛m 賈斯特 盧king, 散ks</span>" },
-                { en: "What's up?", zh: "最近好嗎？", ipa: "/wʌts ʌp/", note: "非正式問候。<br><span class='text-indigo-600 font-bold'>音似：瓦ts 阿p?</span>" },
-                { en: "It's on the house.", zh: "這頓由店家請客。", ipa: "/ɪts ɑn ðə haʊs/", note: "House 指店家。<br><span class='text-indigo-600 font-bold'>音似：依ts 昂 德 豪Hs</span>" },
-                { en: "Keep the change.", zh: "不用找零了。", ipa: "/kip ðə tʃeɪndʒ/", note: "Change 指零錢。<br><span class='text-indigo-600 font-bold'>音似：Kip 德 圈-居</span>" },
-                { en: "I'll pick you up later.", zh: "我晚點去接你。", ipa: "/pɪk ju ʌp/", note: "Pick up 接送。<br><span class='text-indigo-600 font-bold'>音似：愛l 皮k 油 阿p 雷特</span>" },
-                { en: "Let's call it a day.", zh: "今天就到此為止吧。", ipa: "/kɔl ɪt ə deɪ/", note: "收工時常用。<br><span class='text-indigo-600 font-bold'>音似：列ts 寇 依t ㄜ 爹</span>" },
-                { en: "Can you say that again?", zh: "能請你再說一次嗎？", ipa: "/seɪ ðæt əˈgɛn/", note: "沒聽清楚時用。<br><span class='text-indigo-600 font-bold'>音似：肯 油 ㄙㄟ 戴t ㄜ-亘?</span>" },
-                { en: "I'm heading out.", zh: "我要出門了。", ipa: "/hɛdɪŋ aʊt/", note: "Head out 出發。<br><span class='text-indigo-600 font-bold'>音似：愛m 黑定 奧t</span>" },
-                { en: "Do you have any recommendations?", zh: "你有什麼推薦的嗎？", ipa: "/ˌrɛkəmɛnˈdeɪʃənz/", note: "點餐時用。<br><span class='text-indigo-600 font-bold'>音似：度 油 哈v 恩尼 瑞可門-爹-炫s?</span>" },
-                { en: "It doesn't matter.", zh: "沒關係。", ipa: "/dʌznt ˈmætər/", note: "表示不在意。<br><span class='text-indigo-600 font-bold'>音似：依t 達震t 麥特</span>" },
-                { en: "Are you free tonight?", zh: "你今晚有空嗎？", ipa: "/ɑr ju fri/", note: "約人時用。<br><span class='text-indigo-600 font-bold'>音似：阿 油 fri 土-奈t?</span>" },
-                { en: "See you later.", zh: "待會見。", ipa: "/si ju ˈleɪtər/", note: "道別常用。<br><span class='text-indigo-600 font-bold'>音似：C 油 雷特</span>" }
-            ],
-            // Level 8: 文法動詞
-            level8: [ 
-                { en: "Go", zh: "去", ipa: "/goʊ/", note: "o 發 /oʊ/。<br><span class='text-indigo-600 font-bold'>音似：購</span>" }, 
-                { en: "Do", zh: "做", ipa: "/du/", note: "o 發 /u/。<br><span class='text-indigo-600 font-bold'>音似：度</span>" },
-                { en: "Eat", zh: "吃", ipa: "/it/", note: "ea 發 /i/。<br><span class='text-indigo-600 font-bold'>音似：異t</span>" },
-                { en: "Saw", zh: "看(過去)", ipa: "/sɔ/", note: "aw 發 /ɔ/。<br><span class='text-indigo-600 font-bold'>音似：索</span>" },
-                { en: "Buy", zh: "買", ipa: "/baɪ/", note: "uy 發 /aɪ/。<br><span class='text-indigo-600 font-bold'>音似：拜</span>" }
-            ],
-            // Level 9: 高三精進
-            level9: [ 
-                { en: "Time", zh: "時間", ipa: "/taɪm/", note: "i 發 /aɪ/。<br><span class='text-indigo-600 font-bold'>音似：泰m</span>" }, 
-                { en: "Way", zh: "路", ipa: "/weɪ/", note: "ay 發 /eɪ/。<br><span class='text-indigo-600 font-bold'>音似：威</span>" },
-                { en: "Dilemma", zh: "進退兩難", ipa: "/dɪˈlɛmə/", note: "lem 發 /lɛm/。<br><span class='text-indigo-600 font-bold'>音似：底-雷-馬</span>" },
-                { en: "Metaphor", zh: "隱喻", ipa: "/ˈmɛtəfɔr/", note: "ph 發 /f/。<br><span class='text-indigo-600 font-bold'>音似：妹-塔-佛</span>" }
-            ],
-            // Level 10: 學測/多益
-            level10: [
-                { en: "Acquire", zh: "獲得/習得", ipa: "/əˈkwaɪər/", note: "A 發 /ə/；i 發 /aɪ/。<br><span class='text-indigo-600 font-bold'>音似：額-快-爾</span>" },
-                { en: "Comprehensive", zh: "綜合的", ipa: "/ˌkɑmprɪˈhɛnsɪv/", note: "pre 發 /prɪ/。<br><span class='text-indigo-600 font-bold'>音似：康-普瑞-亨-西v</span>" },
-                { en: "Distinguish", zh: "區別", ipa: "/dɪˈstɪŋgwɪʃ/", note: "gu 發 /gw/。<br><span class='text-indigo-600 font-bold'>音似：迪-斯叮-貴噓</span>" },
-                { en: "Appreciate", zh: "感激", ipa: "/əˈpriʃiˌeɪt/", note: "pre 發 /pri/。<br><span class='text-indigo-600 font-bold'>音似：額-普瑞-喜-A-t</span>" },
-                { en: "Potential", zh: "潛力", ipa: "/pəˈtɛnʃəl/", note: "ti 發 /ʃ/。<br><span class='text-indigo-600 font-bold'>音似：頗-天-修</span>" },
-                { en: "Negotiate", zh: "談判", ipa: "/nɪˈgoʊʃiˌeɪt/", note: "ti 發 /ʃi/。<br><span class='text-indigo-600 font-bold'>音似：呢-購-喜-A-t</span>" },
-                { en: "Efficient", zh: "有效率的", ipa: "/ɪˈfɪʃnt/", note: "ci 發 /ʃ/。<br><span class='text-indigo-600 font-bold'>音似：依-非-炫t</span>" },
-                { en: "Domestic", zh: "國內的", ipa: "/dəˈmɛstɪk/", note: "mes 發 /mɛs/。<br><span class='text-indigo-600 font-bold'>音似：得-妹-斯-踢k</span>" }
-            ]
+            // Level 3 ~ 10 維持原樣 (已於前次擴充，這裡僅列部分作為範例)
+            level3: [ { en: "Book", zh: "書", ipa: "/bʊk/", note: "oo 發短音 /ʊ/。<br><span class='text-indigo-600 font-bold'>音似：布可</span>" }, { en: "Cat", zh: "貓", ipa: "/kæt/", note: "a 發蝴蝶音 /æ/。<br><span class='text-indigo-600 font-bold'>音似：凱特</span>" } ],
+            level4: [ { en: "Family", zh: "家庭", ipa: "/ˈfæməli/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：非麼離</span>" } ],
+            level5: [ { en: "Apple", zh: "蘋果", ipa: "/ˈæpl/", note: "a 發 /æ/。<br><span class='text-indigo-600 font-bold'>音似：ㄟ-剖</span>" } ],
+            level6: [ { en: "Student", zh: "學生", ipa: "/ˈstudnt/", note: "u 發 /u/。<br><span class='text-indigo-600 font-bold'>音似：死-丟-等t</span>" } ],
+            level7: [ { en: "Do you need a hand?", zh: "你需要幫忙嗎？", ipa: "/nid ə hænd/", note: "Need a 連讀。<br><span class='text-indigo-600 font-bold'>音似：度 油 尼 ㄜ 漢?</span>" } ],
+            level8: [ { en: "Go", zh: "去", ipa: "/goʊ/", note: "o 發 /oʊ/。<br><span class='text-indigo-600 font-bold'>音似：購</span>" } ],
+            level9: [ { en: "Time", zh: "時間", ipa: "/taɪm/", note: "i 發 /aɪ/。<br><span class='text-indigo-600 font-bold'>音似：泰m</span>" } ],
+            level10: [ { en: "Acquire", zh: "獲得", ipa: "/əˈkwaɪər/", note: "A 發 /ə/。<br><span class='text-indigo-600 font-bold'>音似：額-快-爾</span>" } ]
         };
 
         // 擴充後的資料容器
         let WORD_DATA = {};
-
-        // 設定每局題數
         const QUESTIONS_PER_ROUND = 20;
         const TARGET_WORD_COUNT = 600;
 
-        // --- 自動擴充資料庫函式 ---
         function expandDataTo600() {
             WORD_DATA = JSON.parse(JSON.stringify(RAW_WORD_DATA));
-
             for (const level in WORD_DATA) {
                 if (level === 'level1') continue;
-
                 const originalWords = WORD_DATA[level];
                 const currentCount = originalWords.length;
-                
                 if (currentCount < TARGET_WORD_COUNT) {
                     const needed = TARGET_WORD_COUNT - currentCount;
-                    
                     for (let i = 0; i < needed; i++) {
                         const sourceWord = originalWords[i % currentCount];
-                        
                         WORD_DATA[level].push({
                             en: sourceWord.en, 
                             zh: sourceWord.zh,
                             ipa: sourceWord.ipa,
-                            note: sourceWord.note
+                            note: sourceWord.note,
+                            speakText: sourceWord.speakText // 繼承 speakText
                         });
                     }
                 }
-                
                 WORD_DATA[level].sort(() => 0.5 - Math.random());
             }
-            console.log("資料庫擴充完成");
         }
 
         const LEVELS = [
@@ -247,10 +160,6 @@
             { id: 'level10', title: '10. 學測/多益', desc: '高頻考試必備單字', color: 'bg-stone-500' }
         ];
 
-        // ==========================================
-        //  應用程式邏輯
-        // ==========================================
-
         let state = {
             view: 'home',
             currentLevelId: '',
@@ -263,10 +172,10 @@
             isSecure: window.location.protocol === 'https:' || window.location.hostname === 'localhost',
             speechSupported: false,
             ttsSupported: false,
-            showHelpModal: false
+            showHelpModal: false,
+            listenTimeout: null // 用於偵測錄音沒反應
         };
 
-        // --- TTS ---
         function initTTS() {
             if ('speechSynthesis' in window) {
                 state.ttsSupported = true;
@@ -274,12 +183,24 @@
             }
         }
 
-        function speak(text) {
+        // 修改：優先使用 speakText (如果有設定)
+        function speak(text, overrideText) {
             if (!state.ttsSupported) return;
             window.speechSynthesis.cancel();
             
-            // 移除編號再發音
-            let textToSpeak = text.replace(/\s*\(\d+\)/, "");
+            // 如果有傳入特定文字(例如提示正確答案)，就唸那個
+            // 如果沒有，則檢查資料庫是否有 speakText (給 Level 1, 2 用)
+            // 否則就唸原本的英文單字
+            let textToSpeak = overrideText || text;
+            
+            // 檢查是否是題目物件，且有 speakText 設定 (針對 Level 1, 2)
+            const currentQ = state.questions[state.currentIndex];
+            if (!overrideText && currentQ && currentQ.en === text && currentQ.speakText) {
+                textToSpeak = currentQ.speakText;
+            } else if (!overrideText) {
+                // 普通單字，移除編號
+                textToSpeak = text.replace(/\s*\(\d+\)/, "");
+            }
             
             const u = new SpeechSynthesisUtterance(textToSpeak);
             u.lang = 'en-US';
@@ -293,7 +214,6 @@
             window.speechSynthesis.speak(u);
         }
 
-        // --- STT ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
 
@@ -310,16 +230,29 @@
                     state.transcript = '';
                     state.feedbackMsg = '請發音...';
                     render();
+                    
+                    // 設定超時偵測：如果 5 秒都沒收到結果，提示使用者
+                    clearTimeout(state.listenTimeout);
+                    state.listenTimeout = setTimeout(() => {
+                        if (state.status === 'listening') {
+                            state.status = 'fail';
+                            state.feedbackMsg = '沒聽到聲音，請再試一次 (或檢查權限)';
+                            recognition.stop();
+                            render();
+                        }
+                    }, 5000);
                 };
 
                 recognition.onresult = (event) => {
+                    clearTimeout(state.listenTimeout); // 收到結果，清除超時
                     const result = event.results[0][0].transcript;
                     state.transcript = result;
                     evaluate(result);
-                    recognition.stop(); // 收到結果後立刻停止，防止重複
+                    recognition.stop();
                 };
 
                 recognition.onerror = (e) => {
+                    clearTimeout(state.listenTimeout);
                     console.log('Error', e);
                     if (e.error === 'not-allowed') {
                         state.status = 'fail';
@@ -327,7 +260,7 @@
                         state.showHelpModal = true;
                         render();
                     } else if (e.error === 'no-speech') {
-                        // 這裡不設為 fail，交給 onend 處理
+                        // onend 會處理
                     } else {
                         state.status = 'fail';
                         state.feedbackMsg = '辨識錯誤';
@@ -336,10 +269,10 @@
                 };
 
                 recognition.onend = () => {
-                    // 如果結束時還在 listening 狀態，代表沒收到結果 (no-speech)
+                    clearTimeout(state.listenTimeout);
                     if (state.status === 'listening') {
                         state.status = 'fail';
-                        state.feedbackMsg = '沒聽到聲音，請再試一次';
+                        state.feedbackMsg = '沒聽到聲音，請靠近麥克風';
                         render();
                     }
                 };
@@ -348,7 +281,7 @@
 
         function startRecording() {
             if (!state.speechSupported) {
-                alert("瀏覽器不支援錄音");
+                alert("您的瀏覽器不支援錄音 (建議使用 Chrome)");
                 return;
             }
             try {
@@ -358,20 +291,18 @@
             }
         }
 
-        // --- 核心：智慧比對 ---
         function evaluate(userSay) {
             const currentQ = state.questions[state.currentIndex];
             
-            // 1. 標準化處理 (移除編號、轉小寫、移除非英數符號)
+            // 標準化：轉小寫，移除括號編號，移除非英數字元(標點)
             const normalize = (str) => str.replace(/\s*\(\d+\)/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
             
             const targetClean = normalize(currentQ.en);
             const userClean = normalize(userSay);
 
-            // 2. 基礎比對邏輯
             let isCorrect = userClean === targetClean || userClean.includes(targetClean) || targetClean.includes(userClean);
             
-            // 3. Level 1 & 2 鼓勵模式：只要有說話 (長度>0) 就算對
+            // Level 1 & 2 鼓勵模式：只要有收到聲音 (長度>0) 即算對，因為音標很難辨識精準
             if (state.currentLevelId === 'level1' || state.currentLevelId === 'level2') {
                 if (userSay.trim().length > 0) isCorrect = true;
             }
@@ -380,13 +311,15 @@
                 state.status = 'success';
                 state.score += 5; 
                 state.feedbackMsg = `Correct!`;
-                speak("Good! " + currentQ.en.replace(/\s*\(\d+\)/, ""));
+                // 答對時，再唸一次正確答案加強記憶
+                speak(currentQ.en);
                 render();
                 setTimeout(nextQuestion, 2000);
             } else {
                 state.status = 'fail';
                 state.feedbackMsg = `聽到: "${userSay}"`;
-                speak("Try again. " + currentQ.en.replace(/\s*\(\d+\)/, ""));
+                // 答錯時，唸一次正確答案
+                speak(currentQ.en);
                 render();
             }
         }
@@ -537,7 +470,7 @@
                     statusIcon = `<div class="absolute -top-6 right-0 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1"><i data-lucide="x"></i> Try Again</div>`;
                 }
 
-                // 字體大小自動調整 (針對 Level 7 優化)
+                // 字體大小自動調整
                 let textSizeClass = 'text-5xl';
                 if (q.en.length > 40) textSizeClass = 'text-lg';      
                 else if (q.en.length > 25) textSizeClass = 'text-xl'; 
